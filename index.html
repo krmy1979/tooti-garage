@@ -9,11 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Secular+One&display=swap">
 <style>
-/* Layout: one full-screen play board (a sunny toy road) with a fixed top bar; each game is one big SVG scene. Deliberately one bright daytime look. */
+/* Layout: a sunny toy town. One full-screen play board under a slim top bar; every game is one big SVG scene; a garage collects the cars you earn. One bright daytime look on purpose. */
 :root{
-  --sky:#8fd3ff; --sky-low:#d9f1ff; --grass:#7ccf5b; --grass-dark:#5bb043;
-  --road:#4a4f5c; --line:#ffe066; --ink:#22303d; --paper:#fffaf0;
-  --sun:#ffd23f; --red:#ef4444; --blue:#3b82f6; --yellow:#facc15; --green:#22c55e; --orange:#fb923c; --purple:#a855f7;
+  --sky:#8fd3ff; --ink:#22303d; --paper:#fffaf0;
+  --sun:#ffd23f; --sun-deep:#d4a300; --go:#22c55e; --go-deep:#15803d;
   --tile:#ffffff; --shadow:rgba(34,48,61,.18);
   --display:"Secular One","Varela Round",Arial,sans-serif;
   --body:"Varela Round",Arial,sans-serif;
@@ -23,53 +22,85 @@ html,body{height:100%}
 [hidden]{display:none!important}
 body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 #app{position:relative;height:100%;display:flex;flex-direction:column;direction:rtl}
-.bar{display:flex;align-items:center;gap:10px;padding-block:10px 6px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));z-index:5}
-.round{width:58px;height:58px;border-radius:50%;border:none;background:var(--tile);box-shadow:0 4px 0 var(--shadow);display:grid;place-items:center;cursor:pointer;flex:none;padding:0}
+.bar{display:flex;align-items:center;gap:10px;padding-block:10px 6px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));z-index:6;position:relative}
+.round{width:58px;height:58px;border-radius:50%;border:none;background:var(--tile);box-shadow:0 4px 0 var(--shadow);display:grid;place-items:center;cursor:pointer;flex:none;padding:0;color:var(--ink)}
 .round:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
-.round:focus-visible,.tile:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+.round:focus-visible,.tile:focus-visible,.btn:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .round svg{width:34px;height:34px}
-.stars{margin-inline-start:auto;display:flex;align-items:center;gap:6px;background:var(--tile);border-radius:99px;padding:6px 14px 6px 10px;box-shadow:0 4px 0 var(--shadow);font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums}
-.stars svg{width:32px;height:32px}
-.stars.bump{animation:bump .5s}
-@keyframes bump{40%{transform:scale(1.25)}}
+.round.small{width:44px;height:44px;opacity:.75}
+.round.small svg{width:24px;height:24px}
+.progress{margin-inline-start:auto;display:flex;align-items:center;gap:8px;background:var(--tile);border-radius:99px;padding:6px 14px 6px 8px;box-shadow:0 4px 0 var(--shadow);font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums}
+.progress svg{width:32px;height:32px;flex:none}
+.progress.bump{animation:bump .5s}
+.meter{width:clamp(50px,12vw,110px);height:12px;border-radius:99px;background:#e5e7eb;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#facc15,#fb923c);border-radius:99px;transition:width .6s cubic-bezier(.3,1.4,.5,1)}
+@keyframes bump{40%{transform:scale(1.2)}}
 #stage{flex:1;min-height:0;position:relative;background:linear-gradient(#8fd3ff 0 55%,#5bb043 55%)}
 #stage>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.caption{position:absolute;inset-inline:0;top:calc(80px + env(safe-area-inset-top, 0px));display:flex;justify-content:center;pointer-events:none;z-index:4;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
-.caption span{background:var(--paper);border-radius:22px;padding:10px 22px;font-family:var(--display);font-size:clamp(22px,4.4vw,36px);box-shadow:0 5px 0 var(--shadow);opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s;max-width:100%;text-align:center}
+.caption{position:absolute;inset-inline:0;top:calc(80px + env(safe-area-inset-top, 0px));display:flex;justify-content:center;pointer-events:none;z-index:5;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.caption span{background:var(--paper);border-radius:22px;padding:10px 22px;font-family:var(--display);font-size:clamp(22px,4.4vw,36px);box-shadow:0 5px 0 var(--shadow);opacity:0;transform:translateY(-10px) scale(.95);transition:opacity .25s,transform .3s cubic-bezier(.3,1.5,.5,1);max-width:100%;text-align:center}
 .caption span.on{opacity:1;transform:none}
-/* home grid */
-.home{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2.5vw,24px);align-content:center;padding-block:8px 70px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));max-width:980px;margin:0 auto;z-index:2}
-.tile{border:none;border-radius:28px;background:var(--tile);box-shadow:0 7px 0 var(--shadow);cursor:pointer;padding:10px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--display);font-size:clamp(17px,2.6vw,26px);color:var(--ink);min-width:0;animation:pop .5s backwards}
+.home{position:absolute;inset:0;display:flex;flex-direction:column;z-index:2;padding-block:4px 16px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));overflow-y:auto}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,1.8vw,18px);max-width:1100px;width:100%;margin:auto}
+.tile{border:none;border-radius:26px;background:var(--tile);box-shadow:0 7px 0 var(--shadow);cursor:pointer;padding:8px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:var(--display);font-size:clamp(15px,2.1vw,22px);color:var(--ink);min-width:0;animation:pop .5s backwards;position:relative}
 .tile:active{transform:translateY(5px);box-shadow:0 2px 0 var(--shadow)}
-.tile svg{width:100%;height:auto;max-height:22vh}
+.tile svg{width:100%;height:auto;max-height:17vh}
+.tile .dots{display:flex;gap:3px;height:10px}
+.tile .dots b{width:9px;height:9px;border-radius:50%;background:#e5e7eb}
+.tile .dots b.on{background:var(--sun)}
+.tile.garage{background:#ffe9a8}
 @keyframes pop{from{transform:scale(.6);opacity:0}}
-@media (max-width:560px){.home{grid-template-columns:repeat(2,minmax(0,1fr))}.tile svg{max-height:15vh}}
-/* start */
-.start{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:var(--sky);padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
-.start h1{font-family:var(--display);font-size:clamp(40px,9vw,84px);margin:0;color:var(--ink);text-shadow:0 5px 0 rgba(255,255,255,.7);text-wrap:balance;text-align:center}
-.start .go{width:150px;height:150px;border-radius:50%;border:none;background:var(--green);box-shadow:0 9px 0 #15803d;cursor:pointer;display:grid;place-items:center;animation:breathe 1.6s infinite}
-.start .go svg{width:70px;height:70px}
-.start .go:active{transform:translateY(6px);box-shadow:0 3px 0 #15803d}
-.start p{margin:0;font-size:16px;color:var(--ink);opacity:.75;text-align:center}
+@media (max-width:820px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:560px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.tile svg{max-height:12vh}}
+.start{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(#8fd3ff 0 62%,#6cc551 62%);padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));overflow:hidden}
+.start h1{font-family:var(--display);font-size:clamp(40px,9vw,88px);margin:0;color:var(--ink);text-shadow:0 5px 0 rgba(255,255,255,.75);text-wrap:balance;text-align:center;animation:pop .7s backwards}
+.start .mascot{width:min(360px,70vw);animation:driveIn 1.4s cubic-bezier(.2,.9,.3,1.1) backwards .2s}
+@keyframes driveIn{from{transform:translateX(-120vw)}}
+.start .go{width:132px;height:132px;border-radius:50%;border:none;background:var(--go);box-shadow:0 9px 0 var(--go-deep);cursor:pointer;display:grid;place-items:center;animation:breathe 1.6s infinite 1.6s}
+.start .go svg{width:62px;height:62px}
+.start .go:active{transform:translateY(6px);box-shadow:0 3px 0 var(--go-deep)}
+.start p{margin:0;font-size:16px;color:var(--ink);text-align:center}
 @keyframes breathe{50%{transform:scale(1.07)}}
-/* scene bits */
 .tap{cursor:pointer}
 .hint{animation:hint 1s ease-in-out 3}
-@keyframes hint{50%{transform:scale(1.12)}}
+@keyframes hint{50%{transform:scale(1.14)}}
 .wiggle{animation:wiggle .45s}
-@keyframes wiggle{25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
-.bob{animation:bob 1.2s ease-in-out infinite}
+@keyframes wiggle{25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+.bob{animation:bob 1.3s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-6px)}}
-.spin{animation:spin .6s linear infinite}
+.idle{animation:idle 2.6s ease-in-out infinite}
+@keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.spin{animation:spin .5s linear infinite}
+.spinslow{animation:spin 24s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .flash{animation:flash .35s steps(1) infinite}
 @keyframes flash{50%{opacity:.15}}
-.cloud{animation:drift 40s linear infinite}
-@keyframes drift{from{transform:translateX(-200px)}to{transform:translateX(1200px)}}
+.blink{animation:blink 4s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.cloud{animation:drift 46s linear infinite}
+@keyframes drift{from{transform:translateX(-260px)}to{transform:translateX(1260px)}}
+.flame{animation:flame .4s ease-in-out infinite alternate}
+@keyframes flame{to{transform:scaleY(1.18) scaleX(.9)}}
 .party{position:absolute;inset:0;z-index:8;pointer-events:none}
 .cheer{position:absolute;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.cheer div{font-family:var(--display);font-size:clamp(44px,10vw,96px);color:var(--ink);background:var(--sun);border-radius:40px;padding:14px 40px;box-shadow:0 10px 0 #d4a300;animation:cheer 2.4s forwards}
+.cheer div{font-family:var(--display);font-size:clamp(44px,10vw,96px);color:var(--ink);background:var(--sun);border-radius:40px;padding:14px 40px;box-shadow:0 10px 0 var(--sun-deep);animation:cheer 2.4s forwards}
 @keyframes cheer{0%{transform:scale(0) rotate(-10deg)}15%{transform:scale(1.15) rotate(3deg)}25%{transform:scale(1) rotate(0)}85%{opacity:1}100%{opacity:0;transform:scale(.9)}}
+.overlay{position:absolute;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;background:rgba(34,48,61,.55);padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));animation:fade .3s}
+@keyframes fade{from{opacity:0}}
+.card{background:var(--paper);border-radius:32px;box-shadow:0 12px 0 var(--shadow);padding:22px 24px 26px;width:min(560px,100%);text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;max-height:92%;overflow:auto;animation:pop .45s cubic-bezier(.3,1.5,.5,1)}
+.card h2{margin:0;font-family:var(--display);font-size:clamp(28px,6vw,44px)}
+.card .new{width:min(380px,80%);animation:driveIn 1.2s cubic-bezier(.2,.9,.3,1.1) backwards .3s}
+.btn{font:inherit;font-family:var(--display);font-size:22px;border:none;border-radius:20px;padding:12px 30px;background:var(--go);color:#fff;box-shadow:0 6px 0 var(--go-deep);cursor:pointer}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--go-deep)}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:0 5px 0 var(--shadow);font-size:17px;padding:10px 18px}
+.btn.danger{background:#fee2e2;color:#991b1b;box-shadow:0 5px 0 #fecaca;font-size:17px;padding:10px 18px}
+.parents{text-align:start;width:100%;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.parents table{width:100%;border-collapse:collapse}
+.parents td{padding:5px 0;border-bottom:1px solid #eee5d3}
+.parents td:last-child{text-align:end;font-variant-numeric:tabular-nums}
+.parents label{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.parents input{width:22px;height:22px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important}}
 </style>
 </head>
@@ -80,44 +111,92 @@ body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--body);ove
     <button class="round" id="homeBtn" aria-label="חזרה למסך הבית" hidden>
       <svg viewBox="0 0 40 40"><path d="M6 20 20 7l14 13" fill="none" stroke="#22303d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 18v15h20V18" fill="#ffd23f" stroke="#22303d" stroke-width="3.5" stroke-linejoin="round"/><rect x="17" y="24" width="6" height="9" fill="#22303d"/></svg>
     </button>
-    <button class="round" id="soundBtn" aria-label="השתקה">
-      <svg viewBox="0 0 40 40" id="soundIcon"></svg>
+    <button class="round" id="soundBtn" aria-label="השתקה"><svg viewBox="0 0 40 40" id="soundIcon"></svg></button>
+    <div class="progress" id="progress" aria-live="polite">
+      <svg viewBox="0 0 40 40"><path d="M20 3l5 11 12 1.3-9 8.2 2.6 11.8L20 29.2 9.4 35.3 12 23.5 3 15.3 15 14z" fill="#ffd23f" stroke="#d4a300" stroke-width="2.5" stroke-linejoin="round"/></svg>
+      <span id="starNum">0</span>
+      <span class="meter" aria-hidden="true"><i id="meter"></i></span>
+    </div>
+    <button class="round small" id="parentBtn" aria-label="אזור הורים: לחיצה ארוכה">
+      <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="6" fill="none" stroke="#22303d" stroke-width="3.5"/><path d="M20 4v6M20 30v6M4 20h6M30 20h6M8.7 8.7l4.2 4.2M27.1 27.1l4.2 4.2M8.7 31.3l4.2-4.2M27.1 12.9l4.2-4.2" stroke="#22303d" stroke-width="3.5" stroke-linecap="round"/></svg>
     </button>
-    <div class="stars" id="stars" aria-label="כוכבים"><svg viewBox="0 0 40 40"><path d="M20 3l5 11 12 1.3-9 8.2 2.6 11.8L20 29.2 9.4 35.3 12 23.5 3 15.3 15 14z" fill="#ffd23f" stroke="#d4a300" stroke-width="2.5" stroke-linejoin="round"/></svg><span id="starNum">0</span></div>
   </div>
   <div id="stage"></div>
   <div class="caption"><span id="cap"></span></div>
   <div class="start" id="start">
     <h1>המוסך של טוטי</h1>
+    <svg class="mascot" viewBox="0 -10 290 160" id="startCar" aria-hidden="true"></svg>
     <button class="go" id="go" aria-label="יוצאים לדרך"><svg viewBox="0 0 40 40"><path d="M30 6 10 20l20 14z" fill="#fff"/></svg></button>
-    <p>לוחצים, מפעילים ולומדים צבעים, מספרים וצורות</p>
+    <p>לוחצים, מפעילים ולומדים: צבעים, ספירה, צורות ומילים</p>
   </div>
+  <div id="layer"></div>
 </div>
 
 <script>
-// ---------- sound ----------
+// ================= storage =================
+const SAVE_KEY = "tooti-v2";
+const blank = () => ({ stars: 0, unlocked: ["tooti"], plays: {}, level: {}, seconds: 0, music: true, voice: true });
+let S = blank();
+try { const raw = localStorage.getItem(SAVE_KEY); if (raw) S = { ...blank(), ...JSON.parse(raw) }; else { const old = +localStorage.getItem("tooti-stars"); if (old) S.stars = old; } } catch (e) {}
+const save = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} };
+const lvl = (k) => S.level[k] || 0;
+const levelUp = (k) => { S.level[k] = lvl(k) + 1; save(); };
+
+// ================= sound =================
 let AC = null, muted = false;
 function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === "suspended") AC.resume(); return AC; }
-function tone(freq, dur, type = "sine", vol = 0.18, when = 0, slideTo) {
+function tone(freq, dur, type = "sine", vol = 0.18, when = 0, slideTo, dest) {
   const a = ac(); if (!a || muted) return;
   const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
   o.type = type; o.frequency.setValueAtTime(freq, t);
   if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+  o.connect(g).connect(dest || a.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+function noise(dur, freq = 2500, vol = 0.12, type = "highpass") {
+  const a = ac(); if (!a || muted) return;
+  const len = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  s.buffer = b; f.type = type; f.frequency.value = freq; g.gain.value = vol; s.connect(f).connect(g).connect(a.destination); s.start();
 }
 const SFX = {
-  honk() { tone(330, 0.22, "square", 0.12); tone(415, 0.22, "square", 0.1); tone(330, 0.25, "square", 0.12, 0.28); tone(415, 0.25, "square", 0.1, 0.28); },
+  honk() { tone(330, 0.22, "square", 0.11); tone(415, 0.22, "square", 0.09); tone(330, 0.25, "square", 0.11, 0.28); tone(415, 0.25, "square", 0.09, 0.28); },
+  beep() { tone(520, 0.14, "square", 0.08); tone(520, 0.14, "square", 0.08, 0.2); },
+  bigHorn() { tone(150, 0.6, "sawtooth", 0.08); tone(190, 0.6, "sawtooth", 0.06); },
   pop() { tone(500, 0.12, "sine", 0.2, 0, 1200); },
   ding() { tone(880, 0.25, "triangle", 0.18); tone(1320, 0.35, "triangle", 0.14, 0.12); },
-  vroom() { tone(70, 1.1, "sawtooth", 0.09, 0, 190); tone(110, 1.1, "square", 0.04, 0, 260); },
+  vroom(p = 1) { tone(70 * p, 1.0, "sawtooth", 0.08, 0, 190 * p); tone(110 * p, 1.0, "square", 0.035, 0, 260 * p); },
+  rev(p = 1) { tone(90 * p, 0.25, "sawtooth", 0.07, 0, 160 * p); },
   boop() { tone(260, 0.18, "triangle", 0.15, 0, 200); },
-  spray() { const a = ac(); if (!a || muted) return; const len = a.sampleRate * 0.6, b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = b; f.type = "highpass"; f.frequency.value = 2500; g.gain.value = 0.12; s.connect(f).connect(g).connect(a.destination); s.start(); },
-  siren(kind) { for (let i = 0; i < 3; i++) { if (kind === "police") { tone(700, 0.45, "square", 0.06, i * 0.9, 1300); tone(1300, 0.45, "square", 0.06, i * 0.9 + 0.45, 700); } else if (kind === "fire") { tone(600, 0.9, "sawtooth", 0.05, i * 0.9, 950); } else { tone(960, 0.42, "triangle", 0.12, i * 0.9); tone(770, 0.42, "triangle", 0.12, i * 0.9 + 0.45); } } },
+  spray() { noise(0.6, 2500, 0.12); },
+  water() { noise(1.6, 900, 0.08, "bandpass"); },
+  glug() { tone(180, 0.09, "sine", 0.12, 0, 120); },
+  click() { tone(900, 0.04, "square", 0.05); },
+  siren(kind) { for (let i = 0; i < 3; i++) { if (kind === "police") { tone(700, 0.45, "square", 0.05, i * 0.9, 1300); tone(1300, 0.45, "square", 0.05, i * 0.9 + 0.45, 700); } else if (kind === "fire") { tone(600, 0.9, "sawtooth", 0.045, i * 0.9, 950); } else { tone(960, 0.42, "triangle", 0.11, i * 0.9); tone(770, 0.42, "triangle", 0.11, i * 0.9 + 0.45); } } },
+  jingle() { [784, 659, 784, 880, 784, 659, 523].forEach((f, i) => tone(f, 0.22, "triangle", 0.12, i * 0.2)); },
   cheer() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.3, "triangle", 0.16, i * 0.12)); },
+  fanfare() { [523, 523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.28, "square", 0.07, i * 0.15)); },
+  wrong() { tone(300, 0.15, "triangle", 0.12, 0, 220); },
 };
+let musicTimer = 0, musicStep = 0, musicGain = null;
+const TUNE = [523, 659, 784, 659, 587, 659, 523, 0, 587, 784, 880, 784, 659, 587, 523, 0];
+const BASS = [262, 0, 196, 0, 220, 0, 196, 0];
+function musicOn() {
+  const a = ac(); if (!a || musicTimer) return;
+  musicGain = a.createGain(); musicGain.gain.value = 0.35; musicGain.connect(a.destination);
+  musicTimer = setInterval(() => {
+    if (muted || !S.music || document.visibilityState !== "visible") return;
+    const n = TUNE[musicStep % TUNE.length], b = BASS[musicStep % BASS.length];
+    if (n) tone(n, 0.3, "triangle", 0.035, 0, undefined, musicGain);
+    if (b && musicStep % 2 === 0) tone(b, 0.5, "sine", 0.05, 0, undefined, musicGain);
+    musicStep++;
+  }, 340);
+}
+const duck = (on) => { if (musicGain && AC) musicGain.gain.setTargetAtTime(on ? 0.12 : 0.35, AC.currentTime, 0.15); };
+const buzz = (ms = 25) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 
-// ---------- voice + caption ----------
+// ================= voice + caption =================
 let heVoice = null;
 function pickVoice() { const vs = speechSynthesis.getVoices(); heVoice = vs.find((v) => /^he|^iw/i.test(v.lang)) || null; }
 if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
@@ -125,271 +204,546 @@ const cap = document.getElementById("cap");
 let capTimer = 0;
 function say(text, show = text) {
   cap.textContent = show; cap.classList.add("on"); clearTimeout(capTimer);
-  capTimer = setTimeout(() => cap.classList.remove("on"), 2800);
-  if (muted || !("speechSynthesis" in window)) return;
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = "he-IL"; if (heVoice) u.voice = heVoice; u.rate = 0.9; u.pitch = 1.15; speechSynthesis.speak(u); } catch (e) {}
+  capTimer = setTimeout(() => cap.classList.remove("on"), 3000);
+  if (muted || !S.voice || !("speechSynthesis" in window)) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = "he-IL"; if (heVoice) u.voice = heVoice; u.rate = 0.9; u.pitch = 1.15; u.onstart = () => duck(true); u.onend = () => duck(false); speechSynthesis.speak(u); } catch (e) {}
 }
+const PRAISE = ["יופי!", "כל הכבוד!", "איזה אלוף!", "מדהים!", "וואו, מעולה!", "בדיוק!", "נהדר!"];
+const praise = () => PRAISE[(Math.random() * PRAISE.length) | 0];
 
-// ---------- stars + celebration ----------
-let stars = 0;
-try { stars = +localStorage.getItem("tooti-stars") || 0; } catch (e) {}
-const starNum = document.getElementById("starNum"), starBox = document.getElementById("stars");
-starNum.textContent = stars;
-function star() {
-  stars++; starNum.textContent = stars; starBox.classList.remove("bump"); void starBox.offsetWidth; starBox.classList.add("bump");
-  try { localStorage.setItem("tooti-stars", String(stars)); } catch (e) {}
-  if (stars % 5 === 0) setTimeout(celebrate, 700);
-}
-function celebrate() {
-  SFX.cheer(); say("כל הכבוד! אלוף!", "כל הכבוד! ⭐");
-  const app = document.getElementById("app");
-  const c = document.createElement("canvas"); c.className = "party"; app.appendChild(c);
-  const ch = document.createElement("div"); ch.className = "cheer"; ch.innerHTML = "<div>כל הכבוד!</div>"; app.appendChild(ch);
-  const w = (c.width = app.clientWidth), h = (c.height = app.clientHeight), x = c.getContext("2d");
-  const cols = ["#ef4444", "#3b82f6", "#facc15", "#22c55e", "#fb923c", "#a855f7"];
-  const bits = Array.from({ length: 140 }, () => ({ x: Math.random() * w, y: -20 - Math.random() * h * 0.5, vx: (Math.random() - 0.5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, s: 6 + Math.random() * 8, c: cols[(Math.random() * 6) | 0] }));
-  const t0 = performance.now();
-  (function f(now) {
-    x.clearRect(0, 0, w, h);
-    for (const b of bits) { b.x += b.vx; b.y += b.vy; b.r += 0.1; x.save(); x.translate(b.x, b.y); x.rotate(b.r); x.fillStyle = b.c; x.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2); x.restore(); }
-    if (now - t0 < 2600) requestAnimationFrame(f); else { c.remove(); ch.remove(); }
-  })(t0);
-}
-
-// ---------- drawing helpers (scenes are 1000 × 620) ----------
+// ================= vehicles =================
 const COLORS = { red: ["#ef4444", "#b91c1c", "אדום"], blue: ["#3b82f6", "#1d4ed8", "כחול"], yellow: ["#facc15", "#ca8a04", "צהוב"], green: ["#22c55e", "#15803d", "ירוק"], orange: ["#fb923c", "#c2410c", "כתום"], purple: ["#a855f7", "#7e22ce", "סגול"] };
-function sky() {
-  return `<defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd3ff"/><stop offset="1" stop-color="#d9f1ff"/></linearGradient></defs>
-  <rect width="1000" height="620" fill="url(#sk)"/>
-  <g transform="translate(880 80)"><circle r="46" fill="#ffd23f"/><g stroke="#ffd23f" stroke-width="7" stroke-linecap="round">${[0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<line x1="0" y1="-60" x2="0" y2="-76" transform="rotate(${a})"/>`).join("")}</g><circle cx="-14" cy="-6" r="5" fill="#22303d"/><circle cx="14" cy="-6" r="5" fill="#22303d"/><path d="M-14 12 Q0 24 14 12" fill="none" stroke="#22303d" stroke-width="4" stroke-linecap="round"/></g>
-  <g class="cloud"><g fill="#fff" opacity=".95" transform="translate(120 90)"><ellipse cx="0" cy="0" rx="50" ry="26"/><ellipse cx="38" cy="-14" rx="36" ry="28"/><ellipse cx="72" cy="2" rx="40" ry="22"/></g></g>
-  <g class="cloud" style="animation-delay:-22s"><g fill="#fff" opacity=".9" transform="translate(300 150) scale(.7)"><ellipse cx="0" cy="0" rx="50" ry="26"/><ellipse cx="38" cy="-14" rx="36" ry="28"/><ellipse cx="72" cy="2" rx="40" ry="22"/></g></g>
-  <path d="M0 360 Q160 290 330 350 T680 340 T1000 330 V620 H0Z" fill="#7ccf5b"/>
-  <path d="M0 400 Q250 360 520 395 T1000 385 V620 H0Z" fill="#5bb043"/>`;
+const randColor = () => Object.values(COLORS)[(Math.random() * 6) | 0];
+function wheel(cx, cy = 112, r = 27, on = true) {
+  if (!on) return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#22303d" stroke-width="4" stroke-dasharray="8 7" opacity=".5"/>`;
+  return `<g transform="translate(${cx} ${cy})"><circle r="${r}" fill="#22303d"/><circle r="${r * 0.82}" fill="#2f3f4f"/><circle r="${r * 0.46}" fill="#d7dee7"/><g class="hub">${[0, 60, 120].map((a) => `<rect x="-2.5" y="${-r * 0.42}" width="5" height="${r * 0.84}" rx="2" fill="#94a3b8" transform="rotate(${a})"/>`).join("")}</g><circle r="${r * 0.13}" fill="#64748b"/></g>`;
 }
-function road(y = 440, h = 120) {
-  let dash = ""; for (let x = 20; x < 1000; x += 110) dash += `<rect x="${x}" y="${y + h / 2 - 5}" width="60" height="10" rx="5" fill="#ffe066"/>`;
-  return `<rect x="0" y="${y}" width="1000" height="${h}" fill="#4a4f5c"/><rect x="0" y="${y}" width="1000" height="7" fill="#e5e7eb"/><rect x="0" y="${y + h - 7}" width="1000" height="7" fill="#e5e7eb"/>${dash}`;
+function eyes(x, y, s = 1) {
+  return `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="14" ry="15" fill="#fff" stroke="#22303d" stroke-width="2"/><g class="blink" style="transform-origin:0 0;transform-box:view-box"><circle cx="-4" cy="1" r="7" fill="#22303d"/><circle cx="-6.5" cy="-2.5" r="2.4" fill="#fff"/></g><path d="M-14 24 Q-1 33 13 24" fill="none" stroke="#22303d" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="14" cy="22" rx="6" ry="3.5" fill="#f9a8d4" opacity=".7"/></g>`;
 }
-// a cartoon car facing left, 280 × 140 local box, wheels touching y = 132
-function car({ color = "#ef4444", dark = "#b91c1c", face = true, wheels = [true, true], extra = "", kind = "car" } = {}) {
-  const wheel = (cx, on) => on ? `<g transform="translate(${cx} 112)"><circle r="27" fill="#22303d"/><circle r="12" fill="#cbd5e1"/><g class="hub"><rect x="-2.5" y="-11" width="5" height="22" rx="2" fill="#94a3b8"/><rect x="-11" y="-2.5" width="22" height="5" rx="2" fill="#94a3b8"/></g></g>` : `<circle cx="${cx}" cy="112" r="27" fill="none" stroke="#22303d" stroke-width="4" stroke-dasharray="8 7" opacity=".55"/>`;
-  let body;
-  if (kind === "truck") body = `<rect x="18" y="40" width="80" height="72" rx="14" fill="${color}"/><path d="M30 46h50v28H24z" fill="#bfe6ff"/><rect x="96" y="22" width="170" height="90" rx="10" fill="${color}"/><rect x="96" y="96" width="170" height="16" fill="${dark}"/>`;
-  else if (kind === "van") body = `<path d="M20 112V62Q22 40 50 34L90 20H258Q270 20 270 34V112Z" fill="${color}"/><path d="M48 60 88 30H130V60Z" fill="#bfe6ff"/><rect x="140" y="30" width="56" height="30" rx="6" fill="#bfe6ff"/><rect x="20" y="96" width="250" height="16" fill="${dark}"/>`;
-  else body = `<path d="M18 112V82Q18 60 46 58L84 56Q104 20 142 18H196Q226 20 240 56L252 58Q270 62 270 84V112Z" fill="${color}"/><path d="M96 56Q112 30 142 28H162V56Z" fill="#bfe6ff"/><path d="M172 28H194Q216 30 228 56H172Z" fill="#bfe6ff"/><rect x="18" y="98" width="252" height="14" rx="4" fill="${dark}"/><line x1="166" y1="60" x2="166" y2="98" stroke="${dark}" stroke-width="3"/><rect x="176" y="68" width="16" height="5" rx="2.5" fill="${dark}"/>`;
-  const eyes = face ? `<g><ellipse cx="44" cy="80" rx="13" ry="14" fill="#fff"/><circle cx="40" cy="81" r="6.5" fill="#22303d"/><circle cx="38" cy="78" r="2.2" fill="#fff"/><path d="M28 100 Q40 108 54 100" fill="none" stroke="#22303d" stroke-width="3.5" stroke-linecap="round"/></g>` : `<circle cx="30" cy="80" r="8" fill="#fff59d"/>`;
-  return `<g class="carbody"><ellipse cx="144" cy="140" rx="128" ry="9" fill="#000" opacity=".15"/>${body}<rect x="258" y="74" width="12" height="14" rx="3" fill="#fca5a5"/>${extra}${eyes}${wheel(70, wheels[0])}${wheel(214, wheels[1])}</g>`;
+const glass = (d) => `<path d="${d}" fill="#bfe6ff"/><path d="${d}" fill="url(#glint)" opacity=".9"/>`;
+const shine = (d) => `<path d="${d}" fill="#fff" opacity=".28"/>`;
+const shadow = (w = 128) => `<ellipse cx="144" cy="141" rx="${w}" ry="8" fill="#000" opacity=".16"/>`;
+const DEFS = `<defs><linearGradient id="glint" x1="0" y1="0" x2="1" y2="1"><stop offset=".25" stop-color="#fff" stop-opacity="0"/><stop offset=".35" stop-color="#fff" stop-opacity=".75"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc8ff"/><stop offset="1" stop-color="#d9f1ff"/></linearGradient><pattern id="check" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#fff"/><rect width="8" height="8" fill="#22303d"/><rect x="8" y="8" width="8" height="8" fill="#22303d"/></pattern></defs>`;
+function vehicle(kind, o = {}) {
+  const c = o.color, d = o.dark, w = o.wheels || [true, true];
+  let s = "";
+  switch (kind) {
+    case "taxi": case "police": case "tooti": case "car": {
+      const col = c || (kind === "taxi" ? "#facc15" : kind === "police" ? "#2563eb" : "#3b82f6"), dk = d || (kind === "taxi" ? "#ca8a04" : kind === "police" ? "#1e3a8a" : "#1d4ed8");
+      s = shadow() + `<path d="M18 112V82Q18 60 46 58L84 56Q104 20 142 18H196Q226 20 240 56L252 58Q270 62 270 84V112Z" fill="${col}"/>` + shine("M50 64Q80 60 250 62Q262 64 264 74L40 74Q42 66 50 64Z") + glass("M96 56Q112 30 142 28H162V56Z") + glass("M172 28H194Q216 30 228 56H172Z") + `<rect x="18" y="98" width="252" height="14" rx="4" fill="${dk}"/><line x1="166" y1="60" x2="166" y2="98" stroke="${dk}" stroke-width="3"/><rect x="176" y="68" width="16" height="5" rx="2.5" fill="${dk}"/><rect x="258" y="72" width="12" height="15" rx="3" fill="#fca5a5"/><circle cx="24" cy="76" r="6" fill="#fff59d"/>`;
+      if (kind === "taxi") s += `<rect x="128" y="2" width="56" height="18" rx="5" fill="#22303d"/><text x="156" y="15.5" font-size="12" text-anchor="middle" fill="#facc15" font-family="Secular One,Arial" direction="rtl">מונית</text><rect x="20" y="86" width="250" height="10" fill="url(#check)" opacity=".85"/>`;
+      if (kind === "police") s += `<rect x="40" y="78" width="225" height="14" fill="#fff"/><g class="bar" transform="translate(128 6)"><rect x="0" y="6" width="56" height="10" rx="5" fill="#334155"/><rect class="l1" x="3" y="-2" width="24" height="12" rx="6" fill="#ef4444"/><rect class="l2" x="29" y="-2" width="24" height="12" rx="6" fill="#3b82f6"/></g>`;
+      s += eyes(48, 78) + wheel(70, 112, 27, w[0]) + wheel(214, 112, 27, w[1]);
+      break;
+    }
+    case "race": {
+      const col = c || "#ef4444", dk = d || "#991b1b";
+      s = shadow(132) + `<path d="M10 112V96Q12 80 40 76L110 70Q130 46 168 44H200Q222 46 236 70L262 74V52H284V70Q286 112 270 112Z" fill="${col}"/>` + shine("M40 80L250 78L252 86L30 88Z") + glass("M122 70Q138 52 166 52H196Q214 54 224 70Z") + `<rect x="10" y="100" width="270" height="12" rx="4" fill="${dk}"/><circle cx="180" cy="90" r="15" fill="#fff"/><text x="180" y="96" font-size="18" text-anchor="middle" fill="#22303d" font-family="Secular One,Arial">1</text><rect x="256" y="46" width="34" height="8" rx="3" fill="#22303d"/>` + eyes(44, 86, 0.85) + wheel(66, 112, 26) + wheel(222, 112, 26);
+      break;
+    }
+    case "bus": {
+      const col = c || "#fb923c", dk = d || "#c2410c";
+      s = shadow(138) + `<rect x="8" y="12" width="274" height="100" rx="18" fill="${col}"/>` + shine("M20 18H270Q276 18 276 26V30H14V26Q14 18 20 18Z") + glass("M14 34H50Q56 34 56 40V66H14Z") + [70, 116, 162, 208].map((x) => glass(`M${x} 34H${x + 38}V66H${x}Z`)).join("") + `<rect x="254" y="34" width="22" height="50" rx="4" fill="#bfe6ff"/><rect x="8" y="94" width="274" height="18" rx="6" fill="${dk}"/><rect x="270" y="76" width="10" height="12" rx="3" fill="#fca5a5"/><circle cx="16" cy="86" r="6" fill="#fff59d"/>` + eyes(34, 80, 0.8) + wheel(62) + wheel(226);
+      break;
+    }
+    case "fire": {
+      const col = c || "#ef4444", dk = d || "#991b1b";
+      s = shadow(136) + `<rect x="16" y="40" width="84" height="72" rx="14" fill="${col}"/>` + glass("M28 48H82V76H22Z") + `<rect x="96" y="22" width="178" height="90" rx="10" fill="${col}"/>` + shine("M100 28H268V36H100Z") + `<rect x="96" y="96" width="178" height="16" fill="${dk}"/><rect x="110" y="6" width="160" height="10" rx="5" fill="#cbd5e1"/>${[126, 150, 174, 198, 222, 246].map((x) => `<rect x="${x}" y="2" width="6" height="18" rx="2" fill="#cbd5e1"/>`).join("")}<rect x="112" y="54" width="150" height="10" fill="#fde047"/>${[120, 170, 220].map((x) => `<rect x="${x}" y="68" width="38" height="22" rx="4" fill="${dk}" opacity=".5"/>`).join("")}<g class="bar" transform="translate(34 30)"><rect x="0" y="6" width="50" height="9" rx="4" fill="#334155"/><rect class="l1" x="2" y="-2" width="22" height="11" rx="5" fill="#ef4444"/><rect class="l2" x="26" y="-2" width="22" height="11" rx="5" fill="#3b82f6"/></g>` + eyes(44, 88, 0.8) + wheel(64) + wheel(226);
+      break;
+    }
+    case "ambulance": {
+      s = shadow(134) + `<path d="M20 112V62Q22 40 50 34L90 20H258Q272 20 272 34V112Z" fill="#fff" stroke="#e2e8f0" stroke-width="2"/>` + glass("M48 60 88 30H130V60Z") + `<rect x="140" y="30" width="54" height="28" rx="6" fill="#bfe6ff"/><rect x="20" y="96" width="252" height="16" fill="#e2e8f0"/><rect x="20" y="70" width="252" height="10" fill="#ef4444"/><path d="M218 30h14v12h12v14h-12v12h-14V56h-12V42h12z" fill="#ef4444"/><g class="bar" transform="translate(90 6)"><rect x="0" y="8" width="50" height="9" rx="4" fill="#334155"/><rect class="l1" x="2" y="0" width="22" height="11" rx="5" fill="#ef4444"/><rect class="l2" x="26" y="0" width="22" height="11" rx="5" fill="#ef4444"/></g>` + eyes(46, 86, 0.8) + wheel(70) + wheel(220);
+      break;
+    }
+    case "tractor": {
+      const col = c || "#22c55e", dk = d || "#15803d";
+      s = shadow(122) + `<rect x="118" y="20" width="10" height="44" fill="#475569"/><rect x="138" y="22" width="92" height="66" rx="10" fill="none" stroke="${dk}" stroke-width="8"/>` + glass("M146 30H222V80H146Z") + `<path d="M20 112V74Q20 60 36 60H150V112Z" fill="${col}"/>` + shine("M30 64H146V72H26Z") + `<rect x="140" y="84" width="104" height="28" rx="6" fill="${col}"/><rect x="114" y="10" width="18" height="12" rx="3" fill="#334155"/>` + eyes(44, 84, 0.8) + wheel(66, 120, 20) + `<g transform="translate(206 100)"><circle r="40" fill="#22303d"/>${Array.from({ length: 12 }, (_, i) => `<rect x="-4" y="-44" width="8" height="8" rx="2" fill="#22303d" transform="rotate(${i * 30})"/>`).join("")}<circle r="22" fill="#facc15"/><g class="hub"><rect x="-3" y="-20" width="6" height="40" rx="2" fill="#ca8a04"/><rect x="-20" y="-3" width="40" height="6" rx="2" fill="#ca8a04"/></g></g>`;
+      break;
+    }
+    case "garbage": {
+      const col = c || "#16a34a", dk = d || "#166534";
+      s = shadow(136) + `<rect x="16" y="40" width="80" height="72" rx="14" fill="#f1f5f9"/>` + glass("M28 48H80V76H22Z") + `<path d="M98 26H262Q278 26 278 42V112H98Z" fill="${col}"/>` + shine("M104 32H268V40H104Z") + `${[120, 150, 180, 210, 240].map((x) => `<rect x="${x}" y="44" width="10" height="48" rx="5" fill="${dk}" opacity=".45"/>`).join("")}<rect x="98" y="96" width="180" height="16" fill="${dk}"/><path d="M240 60 252 54 262 66 250 74Z" fill="#fff" opacity=".8"/>` + eyes(44, 88, 0.8) + wheel(62) + wheel(228);
+      break;
+    }
+    case "icecream": {
+      s = shadow(132) + `<path d="M20 112V62Q22 40 50 34L90 24H262Q274 24 274 36V112Z" fill="#f9a8d4"/>` + shine("M90 30H268V38H86Z") + glass("M48 60 88 34H124V60Z") + `<rect x="138" y="44" width="110" height="40" rx="8" fill="#fff"/>${[148, 176, 204, 232].map((x, i) => `<circle cx="${x + 6}" cy="62" r="9" fill="${["#fde68a", "#86efac", "#fca5a5", "#c4b5fd"][i]}"/>`).join("")}<rect x="20" y="96" width="254" height="16" fill="#ec4899"/><path d="M180 26 196 -6 212 26Z" fill="#f59e0b"/><circle cx="196" cy="-8" r="13" fill="#fde68a"/><circle cx="187" cy="-17" r="9" fill="#fca5a5"/><circle cx="205" cy="-17" r="9" fill="#86efac"/>` + eyes(46, 86, 0.8) + wheel(70) + wheel(220);
+      break;
+    }
+    case "digger": {
+      const col = c || "#facc15", dk = d || "#ca8a04";
+      s = shadow(130) + `<rect x="80" y="96" width="196" height="40" rx="20" fill="#22303d"/>${[102, 140, 178, 216, 254].map((x) => `<circle cx="${x}" cy="116" r="12" fill="#64748b"/><circle cx="${x}" cy="116" r="4" fill="#cbd5e1"/>`).join("")}<rect x="104" y="64" width="160" height="34" rx="8" fill="${col}"/><rect x="190" y="18" width="70" height="50" rx="8" fill="${col}"/>` + glass("M198 26H248V60H198Z") + shine("M108 68H260V74H108Z") + `<path d="M120 70 70 22 34 60" fill="none" stroke="${dk}" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 56 52 56 44 86 22 82Z" fill="#475569"/>` + eyes(128, 82, 0.7);
+      break;
+    }
+    case "mixer": {
+      const col = c || "#e11d48", dk = d || "#9f1239";
+      s = shadow(136) + `<rect x="16" y="40" width="80" height="72" rx="14" fill="${col}"/>` + glass("M28 48H80V76H22Z") + `<rect x="96" y="90" width="182" height="22" rx="6" fill="${dk}"/><g transform="translate(186 58)"><ellipse rx="86" ry="40" fill="#e2e8f0"/>${[-50, -20, 10, 40].map((x) => `<path d="M${x} -38 Q${x + 20} 0 ${x} 38" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round"/>`).join("")}<ellipse rx="86" ry="40" fill="none" stroke="#94a3b8" stroke-width="3"/></g>` + eyes(44, 88, 0.8) + wheel(62) + wheel(228);
+      break;
+    }
+    case "tow": {
+      const col = c || "#0ea5e9", dk = d || "#0369a1";
+      s = shadow(134) + `<rect x="16" y="40" width="86" height="72" rx="14" fill="${col}"/>` + glass("M28 48H84V76H22Z") + `<rect x="100" y="82" width="176" height="30" rx="6" fill="${dk}"/><path d="M150 82 236 18" stroke="#475569" stroke-width="10" stroke-linecap="round"/><path d="M236 18V66" stroke="#22303d" stroke-width="3"/><path d="M236 66q0 12 -10 12" fill="none" stroke="#22303d" stroke-width="4" stroke-linecap="round"/><g class="bar" transform="translate(36 30)"><rect x="0" y="6" width="44" height="9" rx="4" fill="#334155"/><rect class="l1" x="2" y="-2" width="40" height="11" rx="5" fill="#f59e0b"/></g>` + eyes(44, 88, 0.8) + wheel(64) + wheel(226);
+      break;
+    }
+  }
+  return `<g class="carbody">${s}</g>`;
 }
+const svgVehicle = (kind, o, extra = "") => `<svg viewBox="0 -30 290 180" aria-hidden="true">${DEFS}${vehicle(kind, o)}${extra}</svg>`;
+const GARAGE = [
+  { k: "tooti", name: "טוטי", line: "זה אני, טוטי! טוט טוט!", sound: "honk" },
+  { k: "taxi", name: "מונית", line: "מונית! היא מסיעה אנשים", sound: "beep" },
+  { k: "bus", name: "אוטובוס", line: "אוטובוס! הרבה אנשים נוסעים בו", sound: "bigHorn" },
+  { k: "fire", name: "כבאית", line: "כבאית! היא מכבה שריפות", sound: "fire" },
+  { k: "tractor", name: "טרקטור", line: "טרקטור! הוא עובד בשדה", sound: "bigHorn" },
+  { k: "police", name: "ניידת משטרה", line: "ניידת משטרה! היא שומרת עלינו", sound: "police" },
+  { k: "garbage", name: "משאית זבל", line: "משאית זבל! היא שומרת על העיר נקייה", sound: "bigHorn" },
+  { k: "race", name: "מכונית מרוץ", line: "מכונית מרוץ! היא נוסעת מהר מהר", sound: "rev" },
+  { k: "ambulance", name: "אמבולנס", line: "אמבולנס! הוא עוזר לאנשים חולים", sound: "amb" },
+  { k: "icecream", name: "משאית גלידה", line: "משאית גלידה! יאמי, גלידה!", sound: "jingle" },
+  { k: "digger", name: "מחפר", line: "מחפר! הוא חופר בורות גדולים", sound: "bigHorn" },
+  { k: "mixer", name: "מערבל בטון", line: "מערבל בטון! הוא מכין בטון לבניין", sound: "bigHorn" },
+  { k: "tow", name: "גרר", line: "גרר! הוא עוזר למכוניות תקועות", sound: "beep" },
+];
+function playVehicleSound(g) { if (g.sound === "fire" || g.sound === "police") SFX.siren(g.sound); else if (g.sound === "amb") SFX.siren("amb"); else if (g.sound === "rev") { SFX.rev(1.4); SFX.vroom(1.3); } else SFX[g.sound](); }
+
+// ================= scene helpers (1000 × 620) =================
+function sky(extra = "") {
+  return `${DEFS}<rect width="1000" height="620" fill="url(#sk)"/>
+  <g transform="translate(880 80)"><g class="spinslow" style="transform-box:fill-box;transform-origin:center"><g stroke="#ffd23f" stroke-width="7" stroke-linecap="round">${[0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<line x1="0" y1="-60" x2="0" y2="-76" transform="rotate(${a})"/>`).join("")}</g></g><circle r="46" fill="#ffd23f"/><circle cx="-14" cy="-6" r="5" fill="#22303d"/><circle cx="14" cy="-6" r="5" fill="#22303d"/><path d="M-14 12 Q0 24 14 12" fill="none" stroke="#22303d" stroke-width="4" stroke-linecap="round"/></g>
+  ${[[120, 90, 1, 0], [300, 150, 0.7, -20], [620, 70, 0.85, -33]].map(([x, y, s, dl]) => `<g class="cloud" style="animation-delay:${dl}s"><g fill="#fff" opacity=".95" transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="50" ry="26"/><ellipse cx="38" cy="-14" rx="36" ry="28"/><ellipse cx="72" cy="2" rx="40" ry="22"/></g></g>`).join("")}
+  <path d="M0 340 Q160 270 330 330 T680 320 T1000 310 V620 H0Z" fill="#8ad66a"/>
+  ${town()}
+  <path d="M0 390 Q250 350 520 385 T1000 375 V620 H0Z" fill="#5bb043"/>${extra}`;
+}
+function town() {
+  const houses = [[40, "#fca5a5"], [190, "#fde68a"], [560, "#a5f3fc"], [700, "#c4b5fd"]].map(([x, col]) => `<g transform="translate(${x} 300)"><rect x="0" y="20" width="70" height="56" fill="${col}"/><path d="M-6 22 35 -10 76 22Z" fill="#ef4444"/><rect x="26" y="46" width="18" height="30" fill="#92400e"/><rect x="8" y="30" width="14" height="12" fill="#bfe6ff"/><rect x="48" y="30" width="14" height="12" fill="#bfe6ff"/></g>`).join("");
+  const trees = [130, 300, 470, 860, 960].map((x) => `<g transform="translate(${x} 330)"><rect x="-5" y="20" width="10" height="34" fill="#92400e"/><circle cy="10" r="26" fill="#4ade80"/><circle cx="-14" cy="20" r="16" fill="#22c55e"/><circle cx="14" cy="22" r="16" fill="#22c55e"/></g>`).join("");
+  return houses + trees;
+}
+function road(y = 440, h = 120, dashes = true) {
+  let dash = ""; if (dashes) for (let x = 20; x < 1100; x += 110) dash += `<rect x="${x}" y="${y + h / 2 - 5}" width="60" height="10" rx="5" fill="#ffe066"/>`;
+  return `<rect x="0" y="${y - 14}" width="1000" height="14" fill="#cbd5e1"/><rect x="0" y="${y}" width="1000" height="${h}" fill="#4a4f5c"/><rect x="0" y="${y}" width="1000" height="5" fill="#e5e7eb"/><rect x="0" y="${y + h - 5}" width="1000" height="5" fill="#e5e7eb"/><g class="dashes">${dash}</g>`;
+}
+const stage = document.getElementById("stage");
 function fit() { const r = stage.clientWidth / Math.max(1, stage.clientHeight); return r < 1.25 ? "xMidYMax meet" : "xMidYMid slice"; }
 function svgScene(inner) { return `<svg viewBox="0 0 1000 620" preserveAspectRatio="${fit()}" role="img">${inner}</svg>`; }
 addEventListener("resize", () => stage.querySelectorAll(":scope > svg").forEach((s) => s.setAttribute("preserveAspectRatio", fit())));
-const stage = document.getElementById("stage");
-let cleanup = [], idle = 0, idleFn = null;
+let cleanup = [], idle = 0, idleFn = null, current = null;
 function after(ms, fn) { const t = setTimeout(fn, ms); cleanup.push(() => clearTimeout(t)); return t; }
-function poke() { clearTimeout(idle); if (idleFn) idle = setTimeout(() => { idleFn(); poke(); }, 7000); }
-function hint(el) { if (!el) return; el.classList.remove("hint"); void el.getBoundingClientRect(); el.classList.add("hint"); }
-function onTap(el, fn) { el.addEventListener("pointerdown", (e) => { e.preventDefault(); ac(); poke(); fn(e); }); }
-function drive(el, dx, ms, then) {
-  const a = el.animate([{ transform: "translateX(0)" }, { transform: `translateX(${dx}px)` }], { duration: ms, easing: "cubic-bezier(.5,0,.5,1)", fill: "forwards" });
+function every(fn) { let on = true, last = 0; const f = (now) => { if (!on) return; const dt = last ? Math.min((now - last) / 1000, 1 / 20) : 1 / 60; last = now; fn(dt, now); requestAnimationFrame(f); }; requestAnimationFrame(f); cleanup.push(() => (on = false)); }
+function poke() { clearTimeout(idle); if (idleFn) idle = setTimeout(() => { if (idleFn) idleFn(); poke(); }, 7000); }
+function box(el) { el.style.transformBox = "fill-box"; el.style.transformOrigin = "center"; return el; }
+function hint(el) { if (!el) return; box(el); el.classList.remove("hint"); void el.getBoundingClientRect(); el.classList.add("hint"); }
+function onTap(el, fn) { el.addEventListener("pointerdown", (e) => { e.preventDefault(); ac(); poke(); buzz(); fn(e); }); }
+function drive(el, dx, ms, then, dy = 0) {
+  const a = el.animate([{ transform: "translate(0,0)" }, { transform: `translate(${dx}px,${dy}px)` }], { duration: ms, easing: "cubic-bezier(.5,0,.5,1)", fill: "forwards" });
   el.querySelectorAll(".hub").forEach((h) => h.classList.add("spin"));
   a.onfinish = () => { el.querySelectorAll(".hub").forEach((h) => h.classList.remove("spin")); then && then(a); };
   return a;
 }
-function wiggle(el) { el.classList.remove("wiggle"); void el.getBoundingClientRect(); el.classList.add("wiggle"); }
-const box = (el) => { el.style.transformBox = "fill-box"; el.style.transformOrigin = "center"; return el; };
+function wiggle(el) { box(el); el.classList.remove("wiggle"); void el.getBoundingClientRect(); el.classList.add("wiggle"); }
+const NS = "http://www.w3.org/2000/svg";
+function sparkle(svg, x, y, colors = ["#fde047", "#fff", "#f472b6", "#60a5fa"]) {
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElementNS(NS, "circle"), a = Math.random() * Math.PI * 2, d = 50 + Math.random() * 70;
+    p.setAttribute("cx", x); p.setAttribute("cy", y); p.setAttribute("r", 5 + Math.random() * 6); p.setAttribute("fill", colors[i % colors.length]);
+    svg.appendChild(p);
+    p.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(.2)`, opacity: 0 }], { duration: 700 + Math.random() * 300, easing: "cubic-bezier(.2,.8,.3,1)" }).onfinish = () => p.remove();
+  }
+}
+const lights = (g, on) => g.querySelectorAll(".l1,.l2").forEach((l, i) => { l.classList.toggle("flash", on); l.style.animationDelay = i * 0.17 + "s"; });
 
-// ---------- scenes ----------
+// ================= rewards =================
+const UNLOCK_EVERY = 3;
+const starNum = document.getElementById("starNum"), progress = document.getElementById("progress"), meter = document.getElementById("meter");
+function drawProgress() {
+  starNum.textContent = S.stars;
+  const left = GARAGE.length - S.unlocked.length;
+  meter.style.width = left ? ((S.stars % UNLOCK_EVERY) / UNLOCK_EVERY) * 100 + "%" : "100%";
+  progress.setAttribute("aria-label", `${S.stars} כוכבים`);
+}
+function star(game) {
+  S.stars++; if (game) S.plays[game] = (S.plays[game] || 0) + 1; save(); drawProgress();
+  progress.classList.remove("bump"); void progress.offsetWidth; progress.classList.add("bump"); SFX.ding();
+  if (S.stars % UNLOCK_EVERY === 0) {
+    const next = GARAGE.find((g) => !S.unlocked.includes(g.k));
+    if (next) { S.unlocked.push(next.k); save(); meter.style.width = "100%"; setTimeout(() => unlock(next), 1400); }
+    else setTimeout(celebrate, 900);
+  }
+}
+function unlock(g) {
+  SFX.fanfare(); confetti();
+  const layer = document.getElementById("layer");
+  layer.innerHTML = `<div class="overlay" role="dialog" aria-label="מכונית חדשה"><div class="card"><h2>מכונית חדשה!</h2><svg class="new" viewBox="0 -30 290 180">${DEFS}${vehicle(g.k)}</svg><div style="font-family:var(--display);font-size:30px">${g.name}</div><button class="btn" id="toGarage">למוסך שלי</button><button class="btn ghost" id="keepPlay">להמשיך לשחק</button></div></div>`;
+  setTimeout(() => say(`קיבלת ${g.name}! היא מחכה לך במוסך`, g.name + "!"), 500);
+  setTimeout(() => playVehicleSound(g), 1600);
+  layer.querySelector("#toGarage").onclick = () => { layer.innerHTML = ""; drawProgress(); open("garage"); };
+  layer.querySelector("#keepPlay").onclick = () => { layer.innerHTML = ""; drawProgress(); };
+}
+function confetti() {
+  const app = document.getElementById("app"), c = document.createElement("canvas"); c.className = "party"; app.appendChild(c);
+  const w = (c.width = app.clientWidth), h = (c.height = app.clientHeight), x = c.getContext("2d");
+  const cols = ["#ef4444", "#3b82f6", "#facc15", "#22c55e", "#fb923c", "#a855f7"];
+  const bits = Array.from({ length: 150 }, () => ({ x: Math.random() * w, y: -20 - Math.random() * h * 0.5, vx: (Math.random() - 0.5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, s: 6 + Math.random() * 8, c: cols[(Math.random() * 6) | 0] }));
+  const t0 = performance.now();
+  (function f(now) { x.clearRect(0, 0, w, h); for (const b of bits) { b.x += b.vx; b.y += b.vy; b.r += 0.1; x.save(); x.translate(b.x, b.y); x.rotate(b.r); x.fillStyle = b.c; x.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2); x.restore(); } if (now - t0 < 2800) requestAnimationFrame(f); else c.remove(); })(t0);
+}
+function celebrate() {
+  SFX.cheer(); say("כל הכבוד! אלוף!", "כל הכבוד! ⭐"); confetti();
+  const app = document.getElementById("app"), ch = document.createElement("div"); ch.className = "cheer"; ch.innerHTML = "<div>כל הכבוד!</div>"; app.appendChild(ch); setTimeout(() => ch.remove(), 2500);
+}
+
+// ================= games =================
 const SCENES = {};
 
-// 1. traffic light: colors and road rules
+// 1. traffic light: colors and road rules; ducks cross on red
 SCENES.light = function () {
-  stage.innerHTML = svgScene(`${sky()}${road()}
-    <g transform="translate(760 150)">
-      <rect x="34" y="150" width="22" height="300" rx="6" fill="#64748b"/>
-      <rect x="0" y="0" width="90" height="250" rx="26" fill="#22303d"/>
-      <g class="tap lamp" data-c="red"><circle cx="45" cy="45" r="32" fill="#7f1d1d"/></g>
-      <g class="tap lamp" data-c="yellow"><circle cx="45" cy="125" r="32" fill="#713f12"/></g>
-      <g class="tap lamp" data-c="green"><circle cx="45" cy="205" r="32" fill="#14532d"/></g>
+  stage.innerHTML = svgScene(`${sky()}${road(440, 130)}
+    ${[0, 1, 2, 3, 4, 5].map((i) => `<rect x="490" y="${448 + i * 20}" width="80" height="12" fill="#fff" opacity=".9"/>`).join("")}
+    <g id="ducks" opacity="0">${[0, 1, 2].map((i) => `<g transform="translate(530 ${600 + i * 36}) scale(${i ? 0.7 : 1})"><ellipse cx="0" cy="0" rx="20" ry="14" fill="#fde047"/><circle cx="-14" cy="-14" r="10" fill="#fde047"/><path d="M-24 -14 -32 -11 -24 -9Z" fill="#fb923c"/><circle cx="-16" cy="-16" r="2" fill="#22303d"/></g>`).join("")}</g>
+    <g transform="translate(780 140)">
+      <rect x="36" y="160" width="20" height="290" rx="6" fill="#64748b"/>
+      <rect x="0" y="0" width="92" height="256" rx="28" fill="#22303d"/><rect x="6" y="6" width="80" height="244" rx="24" fill="#2f3f4f"/>
+      ${["red", "yellow", "green"].map((c, i) => `<g class="tap lamp" data-c="${c}"><circle cx="46" cy="${46 + i * 82}" r="33" fill="#111827"/><circle class="bulb" cx="46" cy="${46 + i * 82}" r="29"/><ellipse cx="36" cy="${34 + i * 82}" rx="10" ry="6" fill="#fff" opacity=".35"/></g>`).join("")}
     </g>
-    <g id="mover" transform="translate(330 370)"><g class="tap" id="theCar">${car({ color: COLORS.blue[0], dark: COLORS.blue[1] })}</g></g>`);
-  const lamps = [...stage.querySelectorAll(".lamp")], mover = stage.querySelector("#mover"), theCar = stage.querySelector("#theCar");
-  const lit = { red: "#ff4d4d", yellow: "#ffd23f", green: "#3ee07a" }, off = { red: "#7f1d1d", yellow: "#713f12", green: "#14532d" };
-  let state = "red", seen = new Set(), anim = null;
-  const setLamp = (c) => lamps.forEach((l) => l.querySelector("circle").setAttribute("fill", l.dataset.c === c ? lit[l.dataset.c] : off[l.dataset.c]));
+    <g id="mover" transform="translate(300 360)"><g class="tap idle" id="theCar">${vehicle("tooti")}</g></g>`);
+  const lamps = [...stage.querySelectorAll(".lamp")], mover = stage.querySelector("#mover"), theCar = stage.querySelector("#theCar"), ducks = stage.querySelector("#ducks");
+  const lit = { red: "#ff4d4d", yellow: "#ffd23f", green: "#3ee07a" }, off = { red: "#5b1a1a", yellow: "#5a3b0e", green: "#0f3d22" };
+  let state = "red", seen = new Set(), ducksOut = false;
+  const setLamp = (c) => lamps.forEach((l) => { const b = l.querySelector(".bulb"), on = l.dataset.c === c; b.setAttribute("fill", on ? lit[l.dataset.c] : off[l.dataset.c]); b.style.filter = on ? `drop-shadow(0 0 14px ${lit[c]})` : "none"; });
   setLamp("red");
-  const loop = () => { if (state !== "green") return; SFX.vroom(); anim = drive(mover, -900, 2600, () => { if (state === "green") { mover.animate([{ transform: "translateX(700px)" }, { transform: "translateX(0)" }], { duration: 1800, easing: "ease-out", fill: "forwards" }).onfinish = loop; } }); };
+  const loop = () => { if (state !== "green") return; SFX.vroom(); drive(mover, -900, 2600, () => { if (state === "green") mover.animate([{ transform: "translateX(760px)" }, { transform: "translateX(0)" }], { duration: 1800, easing: "ease-out", fill: "forwards" }).onfinish = loop; }); };
+  const crossDucks = () => { if (ducksOut) return; ducksOut = true; ducks.setAttribute("opacity", "1"); tone(700, 0.08, "square", 0.05); tone(650, 0.08, "square", 0.05, 0.15); ducks.animate([{ transform: "translateY(0)" }, { transform: "translateY(-270px)" }], { duration: 3400, easing: "linear", fill: "forwards" }).onfinish = () => { ducks.setAttribute("opacity", "0"); ducks.getAnimations().forEach((a) => a.cancel()); ducksOut = false; }; };
   lamps.forEach((l) => onTap(l, () => {
-    const c = l.dataset.c; box(l); wiggle(l); setLamp(c); SFX.boop();
-    if (anim) { anim.pause(); }
-    state = c;
-    if (c === "red") say("אדום! עוצרים");
+    const c = l.dataset.c; wiggle(l); SFX.click();
+    if (c === "green" && ducksOut) { say("רגע! הברווזים עוד עוברים. מחכים"); return; }
+    setLamp(c); mover.getAnimations().forEach((a) => a.pause()); state = c;
+    if (c === "red") { say("אדום! עוצרים. הברווזים עוברים בבטחה"); after(400, crossDucks); }
     if (c === "yellow") say("צהוב! מתכוננים");
     if (c === "green") { say("ירוק! נוסעים"); mover.getAnimations().forEach((a) => a.cancel()); loop(); }
-    if (!seen.has(c)) { seen.add(c); if (seen.size === 3) star(); }
+    if (!seen.has(c)) { seen.add(c); if (seen.size === 3) { star("light"); seen.clear(); } }
   }));
-  onTap(theCar, () => { SFX.honk(); say("טוּט טוּט!"); box(theCar); wiggle(theCar); });
-  idleFn = () => { say(state === "green" ? "לחץ על האור האדום כדי לעצור" : "לחץ על האור הירוק כדי לנסוע"); hint(box(lamps.find((l) => l.dataset.c === (state === "green" ? "red" : "green")))); };
+  onTap(theCar, () => { SFX.honk(); say("טוּט טוּט!"); wiggle(theCar); });
+  idleFn = () => { say(state === "green" ? "לחץ על האדום כדי לעצור" : "לחץ על הירוק כדי לנסוע"); hint(lamps.find((l) => l.dataset.c === (state === "green" ? "red" : "green"))); };
   say("לחץ על הרמזור!");
 };
 
-// 2. car wash: counting 1-5
+// 2. car wash: counting, gets harder (3 → 5 spots)
 SCENES.wash = function () {
   const NUM = ["אחת", "שתיים", "שלוש", "ארבע", "חמש"];
-  const pick = Object.values(COLORS)[(Math.random() * 6) | 0];
-  const spots = [[90, 60], [150, 80], [210, 46], [120, 100], [230, 92]];
+  const n = Math.min(5, 3 + Math.floor(lvl("wash") / 2));
+  const col = randColor();
+  const all = [[90, 60], [150, 80], [210, 46], [120, 100], [230, 92]].sort(() => Math.random() - 0.5).slice(0, n);
   stage.innerHTML = svgScene(`${sky()}
-    <rect x="0" y="470" width="1000" height="150" fill="#94a3b8"/><rect x="0" y="470" width="1000" height="8" fill="#cbd5e1"/>
-    <g transform="translate(250 120)"><rect x="0" y="0" width="500" height="350" rx="24" fill="#38bdf8" opacity=".25"/><rect x="0" y="0" width="500" height="40" rx="14" fill="#0ea5e9"/>
-    ${[60, 160, 340, 440].map((x) => `<g class="bob" style="animation-delay:${x * 3}ms"><rect x="${x - 10}" y="40" width="20" height="210" rx="10" fill="#f472b6" opacity=".55"/></g>`).join("")}</g>
-    <g transform="translate(360 330)">${car({ color: pick[0], dark: pick[1] })}
-      ${spots.map(([x, y], i) => `<g class="tap spot" data-i="${i}"><circle cx="${x}" cy="${y}" r="26" fill="#8b5a2b"/><circle cx="${x + 12}" cy="${y - 10}" r="12" fill="#8b5a2b"/><circle cx="${x - 14}" cy="${y + 8}" r="10" fill="#7a4a1f"/></g>`).join("")}
-      <g id="shine" opacity="0">${[[40, 20], [250, 40], [150, -10]].map(([x, y]) => `<path d="M${x} ${y - 22} L${x + 6} ${y - 6} L${x + 22} ${y} L${x + 6} ${y + 6} L${x} ${y + 22} L${x - 6} ${y + 6} L${x - 22} ${y} L${x - 6} ${y - 6}Z" fill="#fff"/>`).join("")}</g>
-    </g><g id="bubbles"></g>`);
+    <rect x="0" y="470" width="1000" height="150" fill="#94a3b8"/><rect x="0" y="470" width="1000" height="8" fill="#cbd5e1"/>${[60, 260, 460, 660, 860].map((x) => `<rect x="${x}" y="540" width="80" height="10" rx="5" fill="#cbd5e1"/>`).join("")}
+    <g transform="translate(250 110)"><rect x="0" y="0" width="500" height="360" rx="24" fill="#38bdf8" opacity=".2"/><rect x="-10" y="0" width="520" height="44" rx="16" fill="#0ea5e9"/><text x="250" y="31" font-size="26" text-anchor="middle" fill="#fff" font-family="Secular One,Arial" direction="rtl">שטיפת מכוניות</text>
+    ${[60, 160, 340, 440].map((x, i) => `<g class="bob" style="animation-delay:${i * 200}ms"><rect x="${x - 12}" y="44" width="24" height="220" rx="12" fill="${["#f472b6", "#a78bfa", "#60a5fa", "#34d399"][i]}" opacity=".55"/></g>`).join("")}</g>
+    <g id="car" transform="translate(360 330)">${vehicle("car", { color: col[0], dark: col[1] })}
+      ${all.map(([x, y], i) => `<g class="tap spot" data-i="${i}"><circle cx="${x}" cy="${y}" r="24" fill="#8b5a2b"/><circle cx="${x + 12}" cy="${y - 10}" r="12" fill="#8b5a2b"/><circle cx="${x - 14}" cy="${y + 8}" r="10" fill="#7a4a1f"/><circle cx="${x - 4}" cy="${y - 6}" r="5" fill="#a16b3a"/></g>`).join("")}
+    </g><g id="fx"></g>`);
   let count = 0;
-  const bub = stage.querySelector("#bubbles");
-  const spotsEl = [...stage.querySelectorAll(".spot")];
-  spotsEl.forEach((s) => onTap(s, () => {
+  const svg = stage.querySelector("svg"), fx = stage.querySelector("#fx"), spots = [...stage.querySelectorAll(".spot")];
+  spots.forEach((s) => onTap(s, () => {
     if (s.dataset.done) return; s.dataset.done = 1; SFX.pop();
     const c = s.querySelector("circle"), x = 360 + +c.getAttribute("cx"), y = 330 + +c.getAttribute("cy");
-    for (let i = 0; i < 6; i++) { const b = document.createElementNS("http://www.w3.org/2000/svg", "circle"); b.setAttribute("cx", x + (Math.random() - 0.5) * 60); b.setAttribute("cy", y); b.setAttribute("r", 8 + Math.random() * 12); b.setAttribute("fill", "#e0f2fe"); b.setAttribute("stroke", "#7dd3fc"); b.setAttribute("stroke-width", "3"); bub.appendChild(b); b.animate([{ transform: "translateY(0)", opacity: 1 }, { transform: `translateY(${-120 - Math.random() * 80}px)`, opacity: 0 }], { duration: 1000 + Math.random() * 500, easing: "ease-out" }).onfinish = () => b.remove(); }
-    s.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: "forwards" });
+    for (let i = 0; i < 7; i++) { const b = document.createElementNS(NS, "circle"); b.setAttribute("cx", x + (Math.random() - 0.5) * 60); b.setAttribute("cy", y); b.setAttribute("r", 8 + Math.random() * 12); b.setAttribute("fill", "#e0f2fe"); b.setAttribute("fill-opacity", ".8"); b.setAttribute("stroke", "#7dd3fc"); b.setAttribute("stroke-width", "3"); fx.appendChild(b); b.animate([{ transform: "translateY(0)", opacity: 1 }, { transform: `translateY(${-120 - Math.random() * 80}px)`, opacity: 0 }], { duration: 1000 + Math.random() * 500, easing: "ease-out" }).onfinish = () => b.remove(); }
+    box(s); s.animate([{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.4)" }], { duration: 300, fill: "forwards" });
     count++; say(NUM[count - 1] + "!", String(count));
-    if (count === 5) after(900, () => { const sh = stage.querySelector("#shine"); sh.animate([{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: 0 }], { duration: 1400 }); SFX.ding(); say("חמישה כתמים! המכונית נקייה ונוצצת!", "נקייה! ✨"); star(); after(3400, SCENES.wash); });
+    if (count === n) after(900, () => { sparkle(svg, 500, 380); sparkle(svg, 620, 350); say(`${NUM[n - 1]} כתמים! המכונית נקייה ונוצצת!`, "נקייה! ✨"); levelUp("wash"); star("wash"); after(1300, () => { SFX.vroom(); drive(stage.querySelector("#car"), -900, 1800); }); after(3800, SCENES.wash); });
   }));
-  idleFn = () => { say("לחץ על הבוץ כדי לנקות"); hint(box(spotsEl.find((s) => !s.dataset.done))); };
-  say("המכונית מלוכלכת! בוא נספור ונשטוף");
+  idleFn = () => { say("לחץ על הבוץ כדי לנקות"); hint(spots.find((s) => !s.dataset.done)); };
+  say(`המכונית מלוכלכת! בוא נספור ${n} כתמים`);
 };
 
-// 3. paint shop: color names
+// 3. paint shop: free play, then "paint it blue" requests
 SCENES.paint = function () {
   const keys = Object.keys(COLORS);
+  let ask = null, free = 0;
   stage.innerHTML = svgScene(`${sky()}
     <rect x="0" y="420" width="1000" height="200" fill="#e7e5e4"/><rect x="0" y="420" width="1000" height="8" fill="#d6d3d1"/>
-    <g transform="translate(360 250) scale(1.15)" id="paintCar">${car({ color: "#f1f5f9", dark: "#cbd5e1" })}</g>
+    <g transform="translate(345 230) scale(1.15)" id="paintCar">${vehicle("car", { color: "#f1f5f9", dark: "#cbd5e1" })}</g>
     <g id="mist"></g>
-    ${keys.map((k, i) => { const x = 95 + i * 162, [c, d] = COLORS[k]; return `<g class="tap bucket" data-k="${k}" transform="translate(${x} 530)"><path d="M-46 -40 H46 L38 40 H-38Z" fill="${c}" stroke="${d}" stroke-width="5" stroke-linejoin="round"/><ellipse cx="0" cy="-40" rx="46" ry="12" fill="${d}"/><ellipse cx="0" cy="-42" rx="38" ry="8" fill="${c}"/><path d="M-46 -40 Q0 -100 46 -40" fill="none" stroke="#64748b" stroke-width="5"/></g>`; }).join("")}`);
-  const carEl = stage.querySelector("#paintCar"), mist = stage.querySelector("#mist");
-  const used = new Set();
+    ${keys.map((k, i) => { const x = 95 + i * 162, [c, d] = COLORS[k]; return `<g class="tap bucket" data-k="${k}" transform="translate(${x} 530)"><path d="M-46 -40 H46 L38 40 H-38Z" fill="${c}" stroke="${d}" stroke-width="5" stroke-linejoin="round"/><path d="M-40 -30 H-28 L-31 30 H-36Z" fill="#fff" opacity=".3"/><ellipse cx="0" cy="-40" rx="46" ry="12" fill="${d}"/><ellipse cx="0" cy="-42" rx="38" ry="8" fill="${c}"/><path d="M-46 -40 Q0 -100 46 -40" fill="none" stroke="#64748b" stroke-width="5"/></g>`; }).join("")}`);
+  const carEl = stage.querySelector("#paintCar"), mist = stage.querySelector("#mist"), svg = stage.querySelector("svg");
+  carEl.dataset.c = "#f1f5f9"; carEl.dataset.d = "#cbd5e1";
+  const newAsk = () => { const opts = keys.filter((k) => COLORS[k][0] !== carEl.dataset.c); ask = opts[(Math.random() * opts.length) | 0]; say("עכשיו צבע את המכונית ב" + COLORS[ask][2] + "!", "צבע: " + COLORS[ask][2]); };
   stage.querySelectorAll(".bucket").forEach((b) => onTap(b, () => {
     const k = b.dataset.k, [c, d, name] = COLORS[k];
-    box(b); wiggle(b); SFX.spray();
-    for (let i = 0; i < 18; i++) { const p = document.createElementNS("http://www.w3.org/2000/svg", "circle"); p.setAttribute("cx", 420 + Math.random() * 320); p.setAttribute("cy", 270 + Math.random() * 140); p.setAttribute("r", 6 + Math.random() * 10); p.setAttribute("fill", c); mist.appendChild(p); p.animate([{ opacity: 0.9, transform: "scale(.3)" }, { opacity: 0, transform: "scale(1.6)" }], { duration: 700 + Math.random() * 400 }).onfinish = () => p.remove(); }
-    after(250, () => { const paths = carEl.querySelectorAll(".carbody > path, .carbody > rect"); paths.forEach((p, i) => { const f = p.getAttribute("fill"); if (i === 0 || f === carEl.dataset.c) p.setAttribute("fill", c); if (f === carEl.dataset.d) p.setAttribute("fill", d); }); carEl.dataset.c = c; carEl.dataset.d = d; say(name + "!"); });
-    if (!used.has(k)) { used.add(k); if (used.size % 3 === 0) after(1200, star); }
+    if (ask && k !== ask) { wiggle(b); SFX.wrong(); say("זה " + name + ". איפה ה" + COLORS[ask][2] + "?"); return; }
+    wiggle(b); SFX.spray();
+    for (let i = 0; i < 22; i++) { const p = document.createElementNS(NS, "circle"); p.setAttribute("cx", 410 + Math.random() * 330); p.setAttribute("cy", 250 + Math.random() * 150); p.setAttribute("r", 6 + Math.random() * 10); p.setAttribute("fill", c); mist.appendChild(p); box(p); p.animate([{ opacity: 0.9, transform: "scale(.3)" }, { opacity: 0, transform: "scale(1.6)" }], { duration: 700 + Math.random() * 400 }).onfinish = () => p.remove(); }
+    after(250, () => {
+      carEl.querySelectorAll(".carbody > path, .carbody > rect").forEach((p) => { const f = p.getAttribute("fill"); if (f === carEl.dataset.c) p.setAttribute("fill", c); else if (f === carEl.dataset.d) p.setAttribute("fill", d); });
+      carEl.dataset.c = c; carEl.dataset.d = d;
+      if (ask) { sparkle(svg, 520, 300); say(praise() + " " + name + "!"); ask = null; levelUp("paint"); star("paint"); after(2400, newAsk); }
+      else { say(name + "!"); free++; if (free === 4) after(1500, newAsk); }
+    });
   }));
-  carEl.dataset.c = "#f1f5f9"; carEl.dataset.d = "#cbd5e1";
-  idleFn = () => { const k = keys[(Math.random() * 6) | 0]; say("איזה צבע? אולי " + COLORS[k][2] + "?"); hint(box(stage.querySelector(`.bucket[data-k="${k}"]`))); };
+  idleFn = () => { const k = ask || keys[(Math.random() * 6) | 0]; say(ask ? "איפה ה" + COLORS[k][2] + "?" : "איזה צבע? אולי " + COLORS[k][2] + "?"); hint(stage.querySelector(`.bucket[data-k="${k}"]`)); };
   say("בחר צבע וצבע את המכונית!");
 };
 
-// 4. parking: shapes
+// 4. parking: shapes, 2 → 4 choices
 SCENES.park = function () {
-  const SHAPES = { circle: ["עיגול", (c) => `<circle r="34" fill="${c}"/>`], square: ["ריבוע", (c) => `<rect x="-32" y="-32" width="64" height="64" rx="6" fill="${c}"/>`], triangle: ["משולש", (c) => `<path d="M0 -38 L38 32 H-38Z" fill="${c}" stroke-linejoin="round"/>`], star: ["כוכב", (c) => `<path d="M0 -38l10 22 24 2.5-18 16.5 5.5 23.5L0 54.5 -21.5 66.5 -16 43-34 26.5-10 24z" transform="scale(.8) translate(0 -14)" fill="${c}"/>`] };
-  const all = Object.keys(SHAPES);
-  const options = all.sort(() => Math.random() - 0.5).slice(0, 3);
-  const want = options[(Math.random() * 3) | 0];
-  const col = Object.values(COLORS)[(Math.random() * 6) | 0];
+  const SHAPES = { circle: ["עיגול", (c) => `<circle r="34" fill="${c}"/>`], square: ["ריבוע", (c) => `<rect x="-32" y="-32" width="64" height="64" rx="6" fill="${c}"/>`], triangle: ["משולש", (c) => `<path d="M0 -38 L38 32 H-38Z" fill="${c}"/>`], star: ["כוכב", (c) => `<path d="M0 -40l11 23 25 3-19 17 6 25-23-13-23 13 6-25-19-17 25-3z" fill="${c}"/>`], heart: ["לב", (c) => `<path d="M0 34C-40 6-36-28-14-30C-4-31 0-22 0-18C0-22 4-31 14-30C36-28 40 6 0 34Z" fill="${c}"/>`] };
+  const n = Math.min(4, 2 + Math.floor(lvl("park") / 3));
+  const options = Object.keys(SHAPES).sort(() => Math.random() - 0.5).slice(0, n);
+  const want = options[(Math.random() * n) | 0];
+  const col = randColor();
+  const slotW = 200, gap = (1000 - n * slotW) / (n + 1);
   stage.innerHTML = svgScene(`${sky()}
-    <rect x="0" y="330" width="1000" height="290" fill="#4a4f5c"/>
-    ${options.map((s, i) => { const x = 140 + i * 260; return `<g class="tap slot" data-s="${s}" transform="translate(${x} 350)"><rect x="0" y="0" width="210" height="130" rx="10" fill="#5b6170"/><rect x="0" y="0" width="8" height="130" fill="#fff"/><rect x="202" y="0" width="8" height="130" fill="#fff"/><g transform="translate(105 65)">${SHAPES[s][1]("#fff")}</g></g>`; }).join("")}
-    <g id="pc" transform="translate(360 470)"><g transform="scale(.9)">${car({ color: col[0], dark: col[1] })}</g><g transform="translate(150 6)"><circle r="40" fill="#fff" stroke="${col[1]}" stroke-width="5"/><g transform="scale(.75)">${SHAPES[want][1](col[1])}</g></g></g>`);
+    <rect x="0" y="330" width="1000" height="290" fill="#4a4f5c"/><rect x="0" y="326" width="1000" height="8" fill="#cbd5e1"/>
+    ${options.map((s, i) => { const x = gap + i * (slotW + gap); return `<g class="tap slot" data-s="${s}" transform="translate(${x} 344)"><rect x="0" y="0" width="${slotW}" height="134" rx="10" fill="#5b6170"/><rect x="0" y="0" width="8" height="134" fill="#fff"/><rect x="${slotW - 8}" y="0" width="8" height="134" fill="#fff"/><g transform="translate(${slotW / 2} 67)">${SHAPES[s][1]("#fff")}</g></g>`; }).join("")}
+    <g id="pc" transform="translate(360 478)"><g transform="scale(.9)">${vehicle("car", { color: col[0], dark: col[1] })}</g><g transform="translate(150 -2)"><circle r="40" fill="#fff" stroke="${col[1]}" stroke-width="5"/><g transform="scale(.75)">${SHAPES[want][1](col[1])}</g></g></g>`);
   const pc = stage.querySelector("#pc"), slots = [...stage.querySelectorAll(".slot")];
   let done = false;
-  slots.forEach((sl) => onTap(sl, () => {
+  slots.forEach((sl, i) => onTap(sl, () => {
     if (done) return;
     if (sl.dataset.s === want) {
-      done = true; SFX.ding(); say(SHAPES[want][0] + "! מצאת חניה!");
-      const i = options.indexOf(want), tx = 140 + i * 260 + 105 - (360 + 130), ty = 350 + 70 - (470 + 70);
+      done = true; say(SHAPES[want][0] + "! מצאת חניה!");
+      const cx = gap + i * (slotW + gap) + slotW / 2, tx = cx - (360 + 130), ty = 344 + 70 - (478 + 70);
       SFX.vroom(); pc.querySelectorAll(".hub").forEach((h) => h.classList.add("spin"));
-      pc.animate([{ transform: "translate(0,0)" }, { transform: `translate(${tx}px,0)` }, { transform: `translate(${tx}px,${ty}px) scale(.8)` }], { duration: 1600, easing: "ease-in-out", fill: "forwards" }).onfinish = () => { pc.querySelectorAll(".hub").forEach((h) => h.classList.remove("spin")); star(); after(1500, SCENES.park); };
-    } else { box(sl); wiggle(sl); SFX.boop(); say("זה " + SHAPES[sl.dataset.s][0] + ". איפה ה" + SHAPES[want][0] + "?"); }
+      pc.animate([{ transform: "translate(0,0)" }, { transform: `translate(${tx}px,0)` }, { transform: `translate(${tx}px,${ty}px) scale(.8)` }], { duration: 1600, easing: "ease-in-out", fill: "forwards" }).onfinish = () => { pc.querySelectorAll(".hub").forEach((h) => h.classList.remove("spin")); sparkle(stage.querySelector("svg"), cx, 410); levelUp("park"); star("park"); after(1600, SCENES.park); };
+    } else { wiggle(sl); SFX.wrong(); say("זה " + SHAPES[sl.dataset.s][0] + ". איפה ה" + SHAPES[want][0] + "?"); }
   }));
-  idleFn = () => { say("איפה ה" + SHAPES[want][0] + "?"); hint(box(slots.find((s) => s.dataset.s === want))); };
-  say("לאן המכונית רוצה לחנות? איפה ה" + SHAPES[want][0] + "?");
+  idleFn = () => { say("איפה ה" + SHAPES[want][0] + "?"); hint(slots.find((s) => s.dataset.s === want)); };
+  say("איפה ה" + SHAPES[want][0] + "? שם המכונית רוצה לחנות");
 };
 
-// 5. emergency vehicles: words and what they do
+// 5. rescue: the fire truck puts out a fire; ambulance and police drive with sirens
 SCENES.rescue = function () {
   const V = [
-    { k: "fire", name: "כבאית", job: "כבאית! היא מכבה שריפות", y: 150, extra: `<rect x="110" y="6" width="150" height="10" rx="5" fill="#94a3b8"/>${[130, 160, 190, 220].map((x) => `<rect x="${x}" y="2" width="6" height="18" fill="#94a3b8"/>`).join("")}<rect x="120" y="50" width="130" height="10" fill="#fde047"/>`, kind: "truck", color: "#ef4444", dark: "#991b1b", bar: ["#ef4444", "#3b82f6"] },
-    { k: "amb", name: "אמבולנס", job: "אמבולנס! הוא עוזר לאנשים חולים", y: 290, extra: `<rect x="150" y="66" width="70" height="14" rx="3" fill="#ef4444"/><path d="M200 36h14v12h12v14h-12v12h-14V62h-12V48h12z" fill="#ef4444"/>`, kind: "van", color: "#ffffff", dark: "#e2e8f0", bar: ["#ef4444", "#ef4444"] },
-    { k: "police", name: "ניידת משטרה", job: "ניידת משטרה! היא שומרת עלינו", y: 430, extra: `<rect x="110" y="72" width="140" height="14" fill="#fff"/>`, kind: "car", color: "#2563eb", dark: "#1e3a8a", bar: ["#ef4444", "#3b82f6"] },
+    { k: "fire", name: "כבאית", job: "כבאית! היא מכבה שריפות", y: 150 },
+    { k: "ambulance", name: "אמבולנס", job: "אמבולנס! הוא עוזר לאנשים חולים", y: 290 },
+    { k: "police", name: "ניידת משטרה", job: "ניידת משטרה! היא שומרת עלינו", y: 430 },
   ];
   stage.innerHTML = svgScene(`${sky()}${road(220, 90)}${road(360, 90)}${road(500, 90)}
-    ${V.map((v) => `<g class="tap veh" data-k="${v.k}" transform="translate(560 ${v.y})"><g class="mv">${car({ color: v.color, dark: v.dark, kind: v.kind, extra: v.extra })}<g class="bar" transform="translate(${v.kind === "truck" ? 40 : 120} ${v.kind === "car" ? 8 : v.kind === "van" ? 10 : 30})"><rect x="0" y="0" width="44" height="14" rx="6" fill="#334155"/><rect class="l1" x="3" y="-8" width="18" height="14" rx="6" fill="${v.bar[0]}"/><rect class="l2" x="23" y="-8" width="18" height="14" rx="6" fill="${v.bar[1]}"/></g></g></g>`).join("")}`);
-  const seen = new Set(); let busy = false;
+    <g transform="translate(60 60)"><rect x="0" y="40" width="110" height="100" fill="#fde68a"/><path d="M-10 44 55 -6 120 44Z" fill="#b91c1c"/><rect x="40" y="90" width="30" height="50" fill="#92400e"/><rect x="12" y="58" width="22" height="20" fill="#bfe6ff"/><rect x="76" y="58" width="22" height="20" fill="#bfe6ff"/>
+      <g id="fire">${[[20, 30], [55, 10], [90, 30]].map(([x, y], i) => `<g transform="translate(${x} ${y})"><g class="flame" style="transform-box:fill-box;transform-origin:50% 100%;animation-delay:${i * 0.13}s"><path d="M0 30C-22 30-22 6-6-14C-6 0 4 2 4-6C16 6 22 30 0 30Z" fill="#f97316"/><path d="M0 30C-10 30-10 18-2 8C0 16 6 16 6 12C10 20 10 30 0 30Z" fill="#fde047"/></g></g>`).join("")}</g>
+      <g id="spray" opacity="0">${[0, 1, 2, 3, 4, 5].map((i) => `<circle cx="${250 - i * 30}" cy="${150 - i * 18}" r="${10 - i}" fill="#7dd3fc"/>`).join("")}</g></g>
+    ${V.map((v) => `<g class="tap veh" data-k="${v.k}" transform="translate(600 ${v.y})"><g class="mv">${vehicle(v.k)}</g></g>`).join("")}`);
+  const seen = new Set(); let busy = false, fireOut = false;
   stage.querySelectorAll(".veh").forEach((g) => onTap(g, () => {
     if (busy) return; busy = true;
     const v = V.find((x) => x.k === g.dataset.k), mv = g.querySelector(".mv");
-    SFX.siren(v.k); say(v.job, v.name + "!");
-    g.querySelectorAll(".l1,.l2").forEach((l, i) => { l.classList.add("flash"); l.style.animationDelay = i * 0.17 + "s"; });
-    drive(mv, -760, 1500, (a) => { mv.animate([{ transform: "translateX(560px)" }, { transform: "translateX(0)" }], { duration: 1300, easing: "ease-out", fill: "forwards" }).onfinish = () => { a.cancel(); g.querySelectorAll(".flash").forEach((l) => l.classList.remove("flash")); busy = false; }; });
-    if (!seen.has(v.k)) { seen.add(v.k); if (seen.size === 3) after(2600, star); }
+    SFX.siren(v.k === "ambulance" ? "amb" : v.k); lights(g, true);
+    if (v.k === "fire" && !fireOut) {
+      say("כבאית! מהר, יש שריפה בבית!", "כבאית!");
+      drive(mv, -300, 1400, () => {
+        const spray = stage.querySelector("#spray"); spray.setAttribute("opacity", "1"); SFX.water();
+        spray.animate([{ opacity: 0.3 }, { opacity: 1 }, { opacity: 0.4 }], { duration: 300, iterations: 6 });
+        after(1800, () => {
+          stage.querySelector("#fire").animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, fill: "forwards" }); spray.setAttribute("opacity", "0"); fireOut = true;
+          say("השריפה כבתה! כל הכבוד לכבאית!"); sparkle(stage.querySelector("svg"), 115, 110);
+          after(1300, () => { mv.animate([{ transform: "translateX(-300px)" }, { transform: "translateX(0)" }], { duration: 1300, easing: "ease-in-out", fill: "forwards" }).onfinish = () => { lights(g, false); busy = false; }; });
+        });
+      });
+    } else {
+      say(v.job, v.name + "!");
+      drive(mv, -820, 1500, (a) => { mv.animate([{ transform: "translateX(560px)" }, { transform: "translateX(0)" }], { duration: 1300, easing: "ease-out", fill: "forwards" }).onfinish = () => { a.cancel(); lights(g, false); busy = false; }; });
+    }
+    if (!seen.has(v.k)) { seen.add(v.k); if (seen.size === 3) after(3200, () => star("rescue")); }
   }));
-  idleFn = () => { const g = [...stage.querySelectorAll(".veh")].find((x) => !seen.has(x.dataset.k)) || stage.querySelector(".veh"); say("לחץ על רכב ההצלה!"); hint(box(g)); };
-  say("רכבי הצלה! לחץ על רכב");
+  idleFn = () => { const g = (fireOut ? [...stage.querySelectorAll(".veh")].find((x) => !seen.has(x.dataset.k)) : stage.querySelector('.veh[data-k="fire"]')) || stage.querySelector(".veh"); say(fireOut ? "לחץ על רכב הצלה!" : "מי מכבה שריפות? הכבאית!"); hint(g); };
+  say("יש שריפה! מי יכול לעזור?");
 };
 
-// 6. build a car: count wheels to 4, then drive
+// 6. build a car: count 4 wheels, switch on the lights, honk, drive
 SCENES.build = function () {
-  const col = Object.values(COLORS)[(Math.random() * 6) | 0];
+  const col = randColor();
   const NUM = ["אחד", "שניים", "שלושה", "ארבעה"];
   stage.innerHTML = svgScene(`${sky()}${road(470, 110)}
-    <g transform="translate(110 360)"><rect x="0" y="0" width="150" height="110" rx="14" fill="#a16207"/><rect x="0" y="0" width="150" height="16" rx="8" fill="#854d0e"/>
-      ${[0, 1, 2, 3].map((i) => `<g class="tap tyre" data-i="${i}" transform="translate(${40 + (i % 2) * 70} ${42 + Math.floor(i / 2) * 44})"><circle r="24" fill="#22303d"/><circle r="10" fill="#cbd5e1"/></g>`).join("")}
+    <g transform="translate(90 350)"><rect x="0" y="0" width="160" height="120" rx="14" fill="#a16207"/><rect x="0" y="0" width="160" height="18" rx="8" fill="#854d0e"/><text x="80" y="14" font-size="12" text-anchor="middle" fill="#fde68a" font-family="Secular One,Arial" direction="rtl">גלגלים</text>
+      ${[0, 1, 2, 3].map((i) => `<g class="tap tyre" data-i="${i}" transform="translate(${44 + (i % 2) * 72} ${46 + Math.floor(i / 2) * 46})">${wheel(0, 0, 22)}</g>`).join("")}
     </g>
-    <g id="bc" transform="translate(470 330)"><g transform="scale(1.1)"><g id="frontSet">${car({ color: col[0], dark: col[1], wheels: [false, false] })}</g></g></g>`);
-  let n = 0;
-  const bc = stage.querySelector("#bc"), tyres = [...stage.querySelectorAll(".tyre")];
-  const draw = () => { stage.querySelector("#frontSet").innerHTML = car({ color: col[0], dark: col[1], wheels: [n >= 1, n >= 2] }); };
+    <g id="beam" opacity="0"><path d="M500 414 L330 370 L330 470Z" fill="#fff59d" opacity=".55"/></g>
+    <g id="bc" transform="translate(470 330)"><g transform="scale(1.1)" id="frame">${vehicle("car", { color: col[0], dark: col[1], wheels: [false, false] })}</g></g>`);
+  let n = 0, phase = "wheels";
+  const bc = stage.querySelector("#bc"), tyres = [...stage.querySelectorAll(".tyre")], frame = stage.querySelector("#frame");
+  const redraw = () => { frame.innerHTML = vehicle("car", { color: col[0], dark: col[1], wheels: [n >= 1, n >= 2] }); };
   tyres.forEach((t) => onTap(t, () => {
-    if (t.dataset.used || n >= 4) return; t.dataset.used = 1; n++;
-    t.animate([{ opacity: 1, transform: t.getAttribute("transform") }, { opacity: 0 }], { duration: 300, fill: "forwards" });
+    if (phase !== "wheels" || t.dataset.used) return; t.dataset.used = 1; n++;
+    t.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: "forwards" });
     SFX.pop(); say(NUM[n - 1] + "!", String(n));
-    if (n <= 2) draw();
-    if (n === 4) after(800, () => { SFX.honk(); say("ארבעה גלגלים! שניים מכל צד. יוצאים לדרך!", "4 גלגלים! 🚗"); star(); after(700, () => { SFX.vroom(); drive(bc, -900, 2200, () => after(400, SCENES.build)); }); });
+    if (n <= 2) redraw();
+    if (n === 4) { phase = "lights"; after(1100, () => { say("ארבעה גלגלים! שניים מכל צד. עכשיו לחץ על המכונית להדליק פנסים"); hint(frame); }); }
   }));
-  idleFn = () => { say("לחץ על גלגל כדי להוסיף אותו"); hint(box(tyres.find((t) => !t.dataset.used))); };
+  onTap(bc, () => {
+    if (phase === "lights") { phase = "honk"; stage.querySelector("#beam").setAttribute("opacity", "1"); SFX.click(); say("הפנסים דולקים! עכשיו לחץ שוב לצפצף"); }
+    else if (phase === "honk") { phase = "go"; SFX.honk(); wiggle(bc); say("גלגלים, פנסים וצפצפה. יוצאים לדרך!", "יוצאים לדרך! 🚗"); levelUp("build"); star("build"); after(1000, () => { stage.querySelector("#beam").setAttribute("opacity", "0"); SFX.vroom(); drive(bc, -900, 2200, () => after(400, SCENES.build)); }); }
+  });
+  idleFn = () => { if (phase === "wheels") { say("לחץ על גלגל כדי להוסיף אותו"); hint(tyres.find((t) => !t.dataset.used)); } else if (phase !== "go") { say(phase === "lights" ? "לחץ על המכונית כדי להדליק פנסים" : "לחץ על המכונית כדי לצפצף"); hint(frame); } };
   say("בוא נבנה מכונית! כמה גלגלים צריך?");
 };
 
-// ---------- home ----------
+// 7. race: tap fast to go fast; 3-2-1 countdown
+SCENES.race = function () {
+  const me = randColor();
+  stage.innerHTML = svgScene(`${sky()}
+    <rect x="0" y="330" width="1000" height="290" fill="#4a4f5c"/><rect x="0" y="326" width="1000" height="8" fill="url(#check)"/>
+    <g id="lines">${Array.from({ length: 12 }, (_, i) => `<rect x="${i * 110 - 110}" y="472" width="60" height="9" rx="4" fill="#fff" opacity=".8"/>`).join("")}</g>
+    <rect x="90" y="334" width="26" height="286" fill="url(#check)"/>
+    <text id="count" x="500" y="250" font-size="140" text-anchor="middle" fill="#22303d" font-family="Secular One,Arial" opacity="0" direction="rtl">3</text>
+    <g id="rival" transform="translate(760 330)"><g transform="scale(.8)">${vehicle("race", { color: "#a855f7", dark: "#7e22ce" })}</g></g>
+    <g id="me" class="tap" transform="translate(760 470)"><g transform="scale(.9)">${vehicle("race", { color: me[0], dark: me[1] })}</g></g>
+    <g transform="translate(860 205)"><g id="pedal" class="tap"><circle r="62" fill="#22c55e" stroke="#15803d" stroke-width="8"/><text y="12" font-size="34" text-anchor="middle" fill="#fff" font-family="Secular One,Arial" direction="rtl">סע!</text></g></g>`);
+  const meEl = stage.querySelector("#me"), rival = stage.querySelector("#rival"), lines = stage.querySelector("#lines"), countEl = stage.querySelector("#count"), pedal = stage.querySelector("#pedal");
+  let x = 760, rx = 760, v = 0, phase = "count", off = 0;
+  ["שלוש", "שתיים", "אחת", "סע!"].forEach((w, i) => after(500 + i * 950, () => { countEl.textContent = i < 3 ? String(3 - i) : "סע!"; countEl.setAttribute("opacity", "1"); box(countEl); countEl.animate([{ transform: "scale(1.6)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], { duration: 300 }); say(w); tone(i < 3 ? 440 : 880, 0.25, "square", 0.08); if (i === 3) { phase = "race"; after(700, () => countEl.setAttribute("opacity", "0")); } }));
+  const tapGo = () => { if (phase !== "race") return; v = Math.min(v + 55, 320); SFX.rev(1 + v / 300); box(pedal); pedal.animate([{ transform: "scale(.88)" }, { transform: "scale(1)" }], { duration: 150 }); };
+  onTap(pedal, tapGo); onTap(meEl, tapGo);
+  every((dt) => {
+    if (phase !== "race") return;
+    v *= Math.exp(-dt * 1.1); x -= v * dt; rx = Math.max(330, rx - 34 * dt); off = (off + v * dt) % 110;
+    meEl.setAttribute("transform", `translate(${x} 470)`); rival.setAttribute("transform", `translate(${rx} 330)`); lines.setAttribute("transform", `translate(${-off} 0)`);
+    meEl.querySelectorAll(".hub").forEach((h) => h.classList.toggle("spin", v > 20));
+    if (x <= 60) { phase = "won"; meEl.querySelectorAll(".hub").forEach((h) => h.classList.remove("spin")); confetti(); SFX.cheer(); say("ניצחת במרוץ! " + praise(), "ניצחת! 🏁"); levelUp("race"); star("race"); after(4000, SCENES.race); }
+  });
+  idleFn = () => { if (phase === "race") { say("לחץ מהר על סע!"); hint(pedal); } };
+  say("מרוץ! לחץ מהר מהר על הכפתור הירוק");
+};
+
+// 8. fuel station: empty and full; hold or tap the pump
+SCENES.fuel = function () {
+  const col = randColor();
+  stage.innerHTML = svgScene(`${sky()}
+    <rect x="0" y="440" width="1000" height="180" fill="#94a3b8"/><rect x="0" y="440" width="1000" height="8" fill="#cbd5e1"/>
+    <rect x="200" y="120" width="600" height="40" rx="10" fill="#ef4444"/><rect x="210" y="160" width="20" height="290" fill="#cbd5e1"/><rect x="770" y="160" width="20" height="290" fill="#cbd5e1"/><text x="500" y="148" font-size="26" text-anchor="middle" fill="#fff" font-family="Secular One,Arial" direction="rtl">תחנת דלק</text>
+    <path d="M680 350 Q620 350 610 400 Q600 430 545 410" fill="none" stroke="#22303d" stroke-width="8" stroke-linecap="round"/>
+    <g id="pump" class="tap" transform="translate(680 230)"><rect x="0" y="0" width="100" height="220" rx="14" fill="#22c55e"/><rect x="14" y="16" width="72" height="44" rx="6" fill="#0f172a"/><text id="lcd" x="50" y="48" font-size="26" text-anchor="middle" fill="#4ade80" font-family="Secular One,Arial">0</text><rect x="22" y="80" width="56" height="70" rx="10" fill="#15803d"/><circle cx="50" cy="115" r="18" fill="#fff"/><path d="M44 106 58 115 44 124Z" fill="#15803d"/></g>
+    <g id="fcar" transform="translate(250 300)">${vehicle("car", { color: col[0], dark: col[1] })}</g>
+    <g transform="translate(400 250)"><rect x="-84" y="-76" width="168" height="104" rx="18" fill="#fff" opacity=".9"/><path d="M-60 0 A60 60 0 0 1 60 0" fill="none" stroke="#e5e7eb" stroke-width="18" stroke-linecap="round"/><path id="arc" d="M-60 0 A60 60 0 0 1 60 0" fill="none" stroke="#22c55e" stroke-width="18" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"/><g id="needle"><rect x="-3" y="-52" width="6" height="52" rx="3" fill="#22303d"/></g><circle r="9" fill="#22303d"/><text x="-60" y="22" font-size="17" fill="#ef4444" text-anchor="middle" font-family="Secular One,Arial">ריק</text><text x="60" y="22" font-size="17" fill="#15803d" text-anchor="middle" font-family="Secular One,Arial">מלא</text></g>`);
+  const needle = stage.querySelector("#needle"), arc = stage.querySelector("#arc"), lcd = stage.querySelector("#lcd"), pump = stage.querySelector("#pump"), fcar = stage.querySelector("#fcar");
+  let fill = 0, holding = false, done = false, half = false, glug = 0;
+  const show = () => { needle.setAttribute("transform", `rotate(${-90 + fill * 180})`); arc.setAttribute("stroke-dashoffset", String(188.5 * (1 - fill))); arc.setAttribute("stroke", fill < 0.3 ? "#ef4444" : fill < 0.7 ? "#facc15" : "#22c55e"); lcd.textContent = Math.round(fill * 40); };
+  show();
+  pump.addEventListener("pointerdown", (e) => { e.preventDefault(); ac(); poke(); buzz(); holding = true; fill = Math.min(1, fill + 0.06); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => pump.addEventListener(ev, () => (holding = false)));
+  every((dt) => {
+    if (done) return;
+    if (holding) { fill = Math.min(1, fill + dt * 0.22); glug += dt; if (glug > 0.25) { glug = 0; SFX.glug(); } }
+    show();
+    if (!half && fill >= 0.5) { half = true; say("חצי מיכל! עוד קצת"); }
+    if (fill >= 1) { done = true; holding = false; say("מלא! המכונית מוכנה לנסוע", "מלא! ⛽"); sparkle(stage.querySelector("svg"), 400, 250); levelUp("fuel"); star("fuel"); after(1300, () => { SFX.vroom(); drive(fcar, -700, 1800, () => after(500, SCENES.fuel)); }); }
+  });
+  idleFn = () => { if (!done) { say("לחץ והחזק את המשאבה הירוקה"); hint(pump); } };
+  say("המיכל ריק! לחץ והחזק את המשאבה");
+};
+
+// 9. garbage truck: sort by color, 2 → 3 bins
+SCENES.sort = function () {
+  const nb = lvl("sort") >= 2 ? 3 : 2;
+  const keys = ["blue", "yellow", "green", "red"].sort(() => Math.random() - 0.5).slice(0, nb);
+  const ITEMS = [(c) => `<path d="M-14 -34h28v10l8 8v44q0 6-6 6h-32q-6 0-6-6v-44l8-8z" fill="${c}"/><rect x="-10" y="-44" width="20" height="10" rx="3" fill="${c}"/>`, (c) => `<path d="M-30 -20Q-32 30 0 32Q32 30 30 -20Q20 -10 0 -24Q-20 -10 -30 -20Z" fill="${c}"/><path d="M-8 -24 0 -40 8 -24" fill="none" stroke="${c}" stroke-width="5"/>`, (c) => `<rect x="-28" y="-30" width="56" height="60" rx="6" fill="${c}"/><path d="M-28 -12h56M-28 8h56" stroke="#fff" stroke-width="3" opacity=".5"/>`];
+  let left = 5, item = null;
+  const binW = 170, gap = (1000 - nb * binW) / (nb + 1);
+  stage.innerHTML = svgScene(`${sky()}
+    <rect x="0" y="470" width="1000" height="150" fill="#94a3b8"/><rect x="0" y="466" width="1000" height="8" fill="#cbd5e1"/>
+    ${keys.map((k, i) => { const x = gap + i * (binW + gap), [c, d] = COLORS[k]; return `<g class="tap bin" data-k="${k}" transform="translate(${x} 380)"><rect x="10" y="20" width="${binW - 20}" height="150" rx="14" fill="${c}"/><rect x="0" y="0" width="${binW}" height="28" rx="10" fill="${d}" class="lid"/><path d="M${binW / 2 - 20} 70h40M${binW / 2 - 20} 100h40" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".6"/></g>`; }).join("")}
+    <g id="truck" transform="translate(1100 300)">${vehicle("garbage")}</g>
+    <g id="itemPos" transform="translate(500 250)"><g id="item"></g></g>`);
+  const itemEl = stage.querySelector("#item"), bins = [...stage.querySelectorAll(".bin")];
+  const next = () => { const k = keys[(Math.random() * nb) | 0]; item = k; itemEl.innerHTML = `<g class="bob"><g transform="scale(1.5)">${ITEMS[(Math.random() * 3) | 0](COLORS[k][0])}</g></g>`; itemEl.animate([{ transform: "translateY(-130px) scale(.3)" }, { transform: "translateY(0) scale(1)" }], { duration: 450, easing: "cubic-bezier(.3,1.5,.5,1)" }); say("לאיזה פח? " + COLORS[k][2]); };
+  bins.forEach((b, i) => onTap(b, () => {
+    if (!item) return;
+    const k = b.dataset.k;
+    if (k !== item) { wiggle(b); SFX.wrong(); say("זה הפח ה" + COLORS[k][2] + ". איפה ה" + COLORS[item][2] + "?"); return; }
+    const dx = gap + i * (binW + gap) + binW / 2 - 500; item = null; SFX.pop();
+    itemEl.animate([{ transform: "translate(0,0) scale(1)" }, { transform: `translate(${dx}px,80px) scale(.6)` }, { transform: `translate(${dx}px,150px) scale(.2)`, opacity: 0 }], { duration: 600, easing: "ease-in", fill: "forwards" }).onfinish = () => { itemEl.innerHTML = ""; itemEl.getAnimations().forEach((a) => a.cancel()); };
+    const lid = b.querySelector(".lid"); box(lid); lid.animate([{ transform: "rotate(0)" }, { transform: "translateY(-14px) rotate(-12deg)" }, { transform: "rotate(0)" }], { duration: 500 });
+    left--; say(praise() + " " + COLORS[k][2] + "!");
+    if (left === 0) after(1000, () => { say("כל הזבל במקום! הנה משאית הזבל", "משאית הזבל! 🚛"); SFX.bigHorn(); drive(stage.querySelector("#truck"), -1300, 4200); levelUp("sort"); star("sort"); after(4800, SCENES.sort); });
+    else after(900, next);
+  }));
+  idleFn = () => { if (item) { say("איפה הפח ה" + COLORS[item][2] + "?"); hint(bins.find((b) => b.dataset.k === item)); } };
+  after(300, next);
+};
+
+// 10. my garage: the collection
+SCENES.garage = function () {
+  const cols = 5, cw = 190, ch = 150, x0 = (1000 - cols * cw) / 2, y0 = 110;
+  stage.innerHTML = svgScene(`${DEFS}<rect width="1000" height="620" fill="#fde68a"/><rect width="1000" height="96" fill="#f59e0b"/><text x="500" y="64" font-size="42" text-anchor="middle" fill="#fff" font-family="Secular One,Arial" direction="rtl">המוסך שלי · ${S.unlocked.length}/${GARAGE.length}</text>
+    ${GARAGE.map((g, i) => { const c = i % cols, r = Math.floor(i / cols), x = x0 + (cols - 1 - c) * cw, y = y0 + r * ch; const have = S.unlocked.includes(g.k); return `<g class="${have ? "tap gcar" : ""}" data-k="${g.k}" transform="translate(${x} ${y})"><rect x="6" y="4" width="${cw - 12}" height="${ch - 10}" rx="14" fill="${have ? "#fff" : "#f3e3b0"}" stroke="#d4a300" stroke-width="3"/><g class="mvwrap" transform="translate(16 28) scale(.55)"><g class="mv">${have ? vehicle(g.k) : `<g opacity=".18">${vehicle(g.k).replace(/fill="(?!url)[^"]+"/g, 'fill="#7c5e10"')}</g>`}</g></g>${have ? "" : `<g transform="translate(${cw / 2} ${ch / 2})"><rect x="-16" y="-6" width="32" height="26" rx="5" fill="#a16207"/><path d="M-10 -6v-8a10 10 0 0 1 20 0v8" fill="none" stroke="#a16207" stroke-width="6"/></g>`}</g>`; }).join("")}`);
+  stage.querySelectorAll(".gcar").forEach((el) => onTap(el, () => {
+    const g = GARAGE.find((x) => x.k === el.dataset.k), mv = el.querySelector(".mv");
+    playVehicleSound(g); say(g.line, g.name); lights(el, true);
+    el.querySelectorAll(".hub").forEach((h) => h.classList.add("spin"));
+    mv.animate([{ transform: "translate(0,0)" }, { transform: "translate(-40px,-6px)" }, { transform: "translate(0,0)" }], { duration: 1200, easing: "ease-in-out" }).onfinish = () => { el.querySelectorAll(".hub").forEach((h) => h.classList.remove("spin")); lights(el, false); };
+  }));
+  const left = GARAGE.length - S.unlocked.length, need = UNLOCK_EVERY - (S.stars % UNLOCK_EVERY);
+  idleFn = null;
+  const have = S.unlocked.length === 1 ? "במוסך יש מכונית אחת." : `במוסך יש ${S.unlocked.length} מכוניות.`;
+  say(left ? `${have} עוד ${need === 1 ? "כוכב אחד" : need + " כוכבים"} ותקבל מכונית חדשה!` : "אספת את כל המכוניות! אלוף!");
+};
+
+// ================= home =================
 const MENU = [
   { k: "light", label: "רמזור", art: () => `<svg viewBox="0 0 200 140"><rect x="76" y="6" width="48" height="128" rx="16" fill="#22303d"/><circle cx="100" cy="32" r="15" fill="#ff4d4d"/><circle cx="100" cy="70" r="15" fill="#ffd23f"/><circle cx="100" cy="108" r="15" fill="#3ee07a"/></svg>` },
-  { k: "wash", label: "שטיפה וספירה", art: () => `<svg viewBox="0 0 290 150"><g transform="translate(4 0)">${car({ color: "#fb923c", dark: "#c2410c" })}<circle cx="150" cy="70" r="16" fill="#8b5a2b"/><circle cx="210" cy="50" r="12" fill="#8b5a2b"/></g><circle cx="250" cy="20" r="12" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="3"/><circle cx="272" cy="40" r="8" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="3"/></svg>` },
-  { k: "paint", label: "צבעים", art: () => `<svg viewBox="0 0 290 150"><g transform="translate(4 0)">${car({ color: "#a855f7", dark: "#7e22ce" })}</g><g transform="translate(250 30)"><path d="M-22 -16H22L18 18H-18Z" fill="#22c55e"/><ellipse cx="0" cy="-16" rx="22" ry="6" fill="#15803d"/></g></svg>` },
-  { k: "park", label: "חניה וצורות", art: () => `<svg viewBox="0 0 200 140"><rect x="10" y="20" width="180" height="100" rx="12" fill="#5b6170"/><circle cx="55" cy="70" r="22" fill="#fff"/><rect x="88" y="48" width="44" height="44" rx="4" fill="#fff"/><path d="M165 46 L188 94 H142Z" fill="#fff" transform="translate(-8 0)"/></svg>` },
-  { k: "rescue", label: "רכבי הצלה", art: () => `<svg viewBox="0 0 290 150"><g transform="translate(4 0)">${car({ color: "#ef4444", dark: "#991b1b", kind: "truck", extra: `<rect x="110" y="6" width="150" height="10" rx="5" fill="#94a3b8"/>` })}</g></svg>` },
-  { k: "build", label: "בונים מכונית", art: () => `<svg viewBox="0 0 290 150"><g transform="translate(4 0)">${car({ color: "#3b82f6", dark: "#1d4ed8", wheels: [true, false] })}</g></svg>` },
+  { k: "wash", label: "שטיפה", art: () => svgVehicle("car", { color: "#fb923c", dark: "#c2410c" }, `<circle cx="150" cy="70" r="16" fill="#8b5a2b"/><circle cx="210" cy="50" r="12" fill="#8b5a2b"/><circle cx="250" cy="0" r="12" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="3"/>`) },
+  { k: "paint", label: "צבעים", art: () => svgVehicle("car", { color: "#a855f7", dark: "#7e22ce" }) },
+  { k: "park", label: "חניה וצורות", art: () => `<svg viewBox="0 0 200 140"><rect x="10" y="20" width="180" height="100" rx="12" fill="#5b6170"/><circle cx="55" cy="70" r="22" fill="#fff"/><rect x="88" y="48" width="44" height="44" rx="4" fill="#fff"/><path d="M157 46 180 94 H134Z" fill="#fff"/></svg>` },
+  { k: "rescue", label: "רכבי הצלה", art: () => svgVehicle("fire") },
+  { k: "build", label: "בונים מכונית", art: () => svgVehicle("car", { color: "#3b82f6", dark: "#1d4ed8", wheels: [true, false] }) },
+  { k: "race", label: "מרוץ", art: () => svgVehicle("race") },
+  { k: "fuel", label: "תחנת דלק", art: () => `<svg viewBox="0 0 200 140"><rect x="60" y="10" width="70" height="124" rx="12" fill="#22c55e"/><rect x="70" y="22" width="50" height="30" rx="5" fill="#0f172a"/><text x="95" y="44" font-size="18" text-anchor="middle" fill="#4ade80" font-family="Secular One,Arial">40</text><path d="M130 70 Q160 70 156 110 Q152 132 120 128" fill="none" stroke="#22303d" stroke-width="7"/></svg>` },
+  { k: "sort", label: "משאית זבל", art: () => svgVehicle("garbage") },
+  { k: "garage", label: "המוסך שלי", art: () => `<svg viewBox="0 0 200 140"><path d="M10 50 100 8 190 50V134H10Z" fill="#f59e0b"/><rect x="34" y="62" width="132" height="72" fill="#7c2d12"/>${[70, 86, 102, 118].map((y) => `<rect x="34" y="${y}" width="132" height="4" fill="#9a3412"/>`).join("")}<path d="M100 18l6 12 13 2-10 9 3 13-12-7-12 7 3-13-10-9 13-2z" fill="#fde047"/></svg>` },
 ];
 function home() {
-  cleanup.forEach((f) => f()); cleanup = []; idleFn = null; clearTimeout(idle);
+  cleanup.forEach((f) => f()); cleanup = []; idleFn = null; clearTimeout(idle); current = null;
   document.getElementById("homeBtn").hidden = true;
-  stage.innerHTML = svgScene(`${sky()}${road(500, 120)}`) + `<div class="home">${MENU.map((m, i) => `<button class="tile" data-k="${m.k}" style="animation-delay:${i * 70}ms">${m.art()}<span>${m.label}</span></button>`).join("")}</div>`;
-  stage.querySelectorAll(".tile").forEach((t) => t.addEventListener("click", () => { ac(); SFX.boop(); open(t.dataset.k); }));
+  stage.innerHTML = svgScene(`${sky()}${road(520, 100)}`) + `<div class="home"><div class="grid">${MENU.map((m, i) => { const plays = S.plays[m.k] || 0; const dots = m.k === "garage" ? `<span style="font-size:14px">${S.unlocked.length}/${GARAGE.length}</span>` : `<span class="dots">${[0, 1, 2].map((d) => `<b class="${plays > d ? "on" : ""}"></b>`).join("")}</span>`; return `<button class="tile${m.k === "garage" ? " garage" : ""}" data-k="${m.k}" style="animation-delay:${i * 50}ms">${m.art()}<span>${m.label}</span>${dots}</button>`; }).join("")}</div></div>`;
+  stage.querySelectorAll(".tile").forEach((t) => t.addEventListener("click", () => { ac(); SFX.click(); open(t.dataset.k); }));
 }
 function open(k) {
-  cleanup.forEach((f) => f()); cleanup = [];
+  cleanup.forEach((f) => f()); cleanup = []; current = k;
   document.getElementById("homeBtn").hidden = false;
   try { speechSynthesis.cancel(); } catch (e) {}
   SCENES[k](); poke();
 }
-document.getElementById("homeBtn").addEventListener("click", () => { SFX.boop(); home(); say("לאן נוסעים עכשיו?"); });
+document.getElementById("homeBtn").addEventListener("click", () => { SFX.click(); home(); say("לאן נוסעים עכשיו?"); });
 
-// sound toggle
+// ================= sound button =================
 const soundIcon = document.getElementById("soundIcon"), soundBtn = document.getElementById("soundBtn");
 function drawSound() { soundIcon.innerHTML = `<path d="M6 15h7l9-8v26l-9-8H6z" fill="#22303d"/>` + (muted ? `<path d="M27 14l10 12M37 14 27 26" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>` : `<path d="M27 13q6 7 0 14M31 9q10 11 0 22" fill="none" stroke="#22303d" stroke-width="3.5" stroke-linecap="round"/>`); soundBtn.setAttribute("aria-label", muted ? "הפעלת צליל" : "השתקה"); }
 soundBtn.addEventListener("click", () => { muted = !muted; drawSound(); if (muted) try { speechSynthesis.cancel(); } catch (e) {} });
 drawSound();
 
-// start
+// ================= parents (long press 1.5 s) =================
+const parentBtn = document.getElementById("parentBtn");
+let holdT = 0, held = false;
+parentBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); held = false; holdT = setTimeout(() => { held = true; parents(); }, 1500); parentBtn.animate([{ transform: "scale(1)" }, { transform: "scale(1.25)" }], { duration: 1500 }); });
+["pointerup", "pointerleave", "pointercancel"].forEach((ev) => parentBtn.addEventListener(ev, () => clearTimeout(holdT)));
+parentBtn.addEventListener("click", () => { if (!held) say("להורים: לחיצה ארוכה", "להורים: לחיצה ארוכה"); });
+const GAME_NAMES = { light: "רמזור", wash: "שטיפה (ספירה)", paint: "צבעים", park: "חניה (צורות)", rescue: "רכבי הצלה", build: "בונים מכונית", race: "מרוץ", fuel: "תחנת דלק (ריק ומלא)", sort: "משאית זבל (מיון צבעים)" };
+function parents() {
+  const layer = document.getElementById("layer");
+  const mins = Math.round(S.seconds / 60);
+  layer.innerHTML = `<div class="overlay" role="dialog" aria-label="אזור הורים"><div class="card"><h2>אזור הורים</h2><div class="parents">
+    <div>כוכבים: <b>${S.stars}</b> · מכוניות במוסך: <b>${S.unlocked.length}/${GARAGE.length}</b> · זמן משחק: <b>${mins} דק׳</b></div>
+    <table>${Object.entries(GAME_NAMES).map(([k, n]) => `<tr><td>${n}</td><td>${S.plays[k] || 0} הצלחות</td></tr>`).join("")}</table>
+    <label for="optMusic">מוזיקת רקע <input type="checkbox" id="optMusic" ${S.music ? "checked" : ""}></label>
+    <label for="optVoice">הקראה קולית <input type="checkbox" id="optVoice" ${S.voice ? "checked" : ""}></label>
+    <div class="row"><button class="btn danger" id="reset">איפוס התקדמות</button><button class="btn" id="closeP">סגירה</button></div>
+  </div></div></div>`;
+  layer.querySelector("#optMusic").onchange = (e) => { S.music = e.target.checked; save(); };
+  layer.querySelector("#optVoice").onchange = (e) => { S.voice = e.target.checked; save(); };
+  const r = layer.querySelector("#reset");
+  r.onclick = () => { if (r.dataset.sure) { const m = S.music, v = S.voice; S = blank(); S.music = m; S.voice = v; save(); drawProgress(); layer.innerHTML = ""; home(); } else { r.dataset.sure = 1; r.textContent = "לחצו שוב לאישור האיפוס"; } };
+  layer.querySelector("#closeP").onclick = () => { layer.innerHTML = ""; };
+}
+setInterval(() => { if (document.visibilityState === "visible" && document.getElementById("start").hidden) { S.seconds += 10; save(); } }, 10000);
+
+// ================= start =================
+document.getElementById("startCar").innerHTML = DEFS + `<g class="idle">${vehicle("tooti")}</g>`;
 document.getElementById("go").addEventListener("click", () => {
-  ac(); SFX.honk(); document.getElementById("start").hidden = true; home(); setTimeout(() => say("שלום! אני טוטי. לאן נוסעים?"), 500);
+  ac(); SFX.honk(); musicOn(); document.getElementById("start").hidden = true; home(); setTimeout(() => say("שלום! אני טוטי. לאן נוסעים?"), 500);
 });
+drawProgress();
 const startAt = location.hash.slice(1);
 home();
 if (SCENES[startAt]) { document.getElementById("start").hidden = true; open(startAt); }
+if (startAt === "home") document.getElementById("start").hidden = true;
 </script>
 </body>
 </html>
